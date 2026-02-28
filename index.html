@@ -1,0 +1,1434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>AttendX v4</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --primary:#2e3192;--primary-dark:#1a1d6e;--primary-light:#eef0ff;
+  --bg:#f0f2f5;--white:#fff;--text:#1a1a2e;--muted:#8a92a0;--border:#e8eaf0;
+  --green:#4caf50;--green-bg:#e8f5e9;--red:#e53935;--red-bg:#fdecea;
+  --orange:#ff9800;--orange-bg:#fff3e0;--shadow:0 2px 12px rgba(0,0,0,0.07);
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+body{font-family:'DM Sans',sans-serif;background:#1a1a2e;display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px;}
+.phone{width:390px;height:780px;background:var(--bg);border-radius:40px;overflow:hidden;position:relative;box-shadow:0 30px 80px rgba(0,0,0,0.5);}
+.screen{position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;display:none;flex-direction:column;background:var(--bg);}
+.screen.active{display:flex;}
+.screen::-webkit-scrollbar{display:none;}
+
+/* BOTTOM NAV */
+.bottom-nav{background:var(--white);border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-around;padding:10px 0 16px;box-shadow:0 -4px 20px rgba(0,0,0,0.06);flex-shrink:0;}
+.nav-item{display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding:4px 10px;background:none;border:none;font-family:'DM Sans',sans-serif;}
+.nav-item svg,.nav-item span{color:#b0b8c8;}
+.nav-item span{font-size:10px;font-weight:600;}
+.nav-item.active svg,.nav-item.active span{color:var(--primary);}
+.nav-center-btn{width:48px;height:48px;background:var(--primary);border-radius:14px;display:flex;align-items:center;justify-content:center;cursor:pointer;border:none;box-shadow:0 4px 16px rgba(46,49,146,0.35);}
+
+/* TOPNAV */
+.topnav{background:var(--bg);padding:14px 20px 10px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.menu-btn{background:none;border:none;cursor:pointer;display:flex;flex-direction:column;gap:5px;padding:4px;}
+.menu-btn span{display:block;height:2px;border-radius:2px;background:var(--text);}
+.menu-btn span:nth-child(1){width:22px}.menu-btn span:nth-child(2){width:16px}.menu-btn span:nth-child(3){width:20px}
+.nav-logo{font-size:18px;font-weight:800;color:var(--text);letter-spacing:-0.5px;}
+.nav-logo span{background:linear-gradient(135deg,#e040fb,#3f51b5);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.notif-btn{background:none;border:none;cursor:pointer;position:relative;padding:4px;}
+.notif-dot{width:8px;height:8px;background:var(--red);border-radius:50%;position:absolute;top:2px;right:2px;border:1.5px solid var(--bg);}
+.back-btn{background:none;border:none;cursor:pointer;color:var(--text);font-size:20px;padding:4px;line-height:1;display:flex;align-items:center;}
+
+/* CARDS & COMMON */
+.card{background:var(--white);border-radius:16px;padding:18px;box-shadow:var(--shadow);margin-bottom:14px;}
+.section-label{font-size:11px;font-weight:700;letter-spacing:1.5px;color:var(--muted);text-transform:uppercase;margin-bottom:10px;}
+.divider{height:1px;background:var(--border);margin:12px 0;}
+
+/* FORMS */
+.form-group{margin-bottom:15px;}
+.form-label{display:block;font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;}
+.req{color:var(--red);}
+.form-input{width:100%;background:#f7f9fb;border:1.5px solid var(--border);border-radius:12px;padding:12px 16px;font-size:14px;font-family:'DM Sans',sans-serif;color:var(--text);outline:none;transition:border-color 0.2s;}
+.form-input:focus{border-color:var(--primary);}
+.form-input.err{border-color:var(--red);}
+.err-msg{font-size:11px;color:var(--red);margin-top:4px;}
+.form-hint{font-size:11px;color:var(--muted);margin-top:5px;line-height:1.5;}
+.input-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.btn-primary{width:100%;background:var(--primary);color:#fff;border:none;border-radius:14px;padding:14px;font-size:15px;font-weight:700;font-family:'DM Sans',sans-serif;cursor:pointer;}
+.btn-outline{width:100%;background:transparent;color:var(--primary);border:2px solid var(--primary);border-radius:14px;padding:12px;font-size:14px;font-weight:700;font-family:'DM Sans',sans-serif;cursor:pointer;}
+.pass-wrap{position:relative;}
+.eye-btn{position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--primary);}
+.info-box{border-radius:12px;padding:13px;margin-bottom:16px;}
+.info-box.blue{background:var(--primary-light);border-left:3px solid var(--primary);}
+.info-box.orange{background:var(--orange-bg);border-left:3px solid var(--orange);}
+.info-box-title{font-size:13px;font-weight:700;margin-bottom:4px;}
+.info-box.blue .info-box-title{color:var(--primary);}
+.info-box.orange .info-box-title{color:#e65100;}
+.info-box-text{font-size:12px;color:var(--muted);line-height:1.5;}
+
+/* SIDE MENU */
+.side-menu{position:absolute;inset:0;z-index:200;display:none;}
+.side-menu.open{display:block;}
+.menu-overlay{position:absolute;inset:0;background:rgba(0,0,0,0.4);}
+.menu-panel{position:absolute;left:0;top:0;bottom:0;width:75%;background:var(--primary-dark);padding:48px 24px 32px;display:flex;flex-direction:column;}
+.menu-avatar{width:70px;height:70px;border-radius:16px;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:800;color:#fff;margin-bottom:12px;}
+.menu-name{font-size:17px;font-weight:700;color:#fff;margin-bottom:4px;}
+.menu-id{font-size:12px;color:rgba(255,255,255,0.6);margin-bottom:28px;}
+.menu-div{height:1px;background:rgba(255,255,255,0.1);margin:6px 0;}
+.menu-item{background:none;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:500;color:rgba(255,255,255,0.85);padding:12px 0;text-align:left;width:100%;}
+.menu-item.logout{color:rgba(255,255,255,0.4);margin-top:auto;}
+
+/* MODAL */
+.modal-overlay{position:absolute;inset:0;background:rgba(0,0,0,0.5);z-index:300;display:none;align-items:flex-end;}
+.modal-overlay.open{display:flex;}
+.modal-sheet{background:var(--white);border-radius:24px 24px 0 0;padding:22px 22px 36px;width:100%;max-height:86%;overflow-y:auto;}
+.modal-sheet::-webkit-scrollbar{display:none;}
+.modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+.modal-title{font-size:16px;font-weight:700;color:var(--text);}
+.modal-close{background:none;border:none;font-size:22px;cursor:pointer;color:var(--muted);line-height:1;}
+
+/* CALENDAR */
+.cal-wrap{background:var(--white);border-radius:14px;border:1.5px solid var(--border);overflow:hidden;}
+.cal-head{background:var(--primary);padding:12px 14px;display:flex;align-items:center;justify-content:space-between;}
+.cal-head-month{font-size:14px;font-weight:700;color:#fff;}
+.cal-nav{background:rgba(255,255,255,0.2);border:none;color:#fff;border-radius:6px;width:28px;height:28px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;}
+.cal-daynames{display:grid;grid-template-columns:repeat(7,1fr);padding:8px 8px 0;}
+.cal-dn{text-align:center;font-size:10px;font-weight:700;color:var(--muted);padding:4px 0;}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);padding:4px 8px 10px;gap:2px;}
+.cal-cell{aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:500;color:var(--text);border-radius:50%;cursor:pointer;transition:all 0.15s;}
+.cal-cell.empty{cursor:default;}
+.cal-cell.today{background:var(--primary);color:#fff;font-weight:700;}
+.cal-cell.holiday{background:var(--red-bg);color:var(--red);font-weight:700;}
+.cal-cell.sunday{color:var(--red);}
+
+/* TOAST */
+#toast{position:absolute;bottom:90px;left:50%;transform:translateX(-50%) translateY(20px);background:#1a1a2e;color:#fff;padding:10px 18px;border-radius:20px;font-size:12px;font-weight:600;opacity:0;transition:all 0.3s;z-index:500;white-space:nowrap;pointer-events:none;}
+
+/* ══ LOGIN ══ */
+#screen-login{background:#eef2f5;}
+.login-wrap{padding:52px 28px 40px;display:flex;flex-direction:column;min-height:100%;}
+.login-logo{font-size:30px;font-weight:800;letter-spacing:-1px;color:var(--text);margin-bottom:44px;}
+.login-logo span{background:linear-gradient(135deg,#e040fb,#3f51b5);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.shield-wrap{width:58px;height:58px;background:#dde3ea;border-radius:16px;display:flex;align-items:center;justify-content:center;margin-bottom:22px;}
+.login-title{font-size:22px;font-weight:700;color:var(--text);margin-bottom:6px;}
+.login-sub{font-size:13px;color:var(--muted);margin-bottom:26px;line-height:1.5;}
+.links-row{display:flex;justify-content:space-between;margin:4px 0 22px;}
+.link-btn{font-size:12px;font-weight:600;color:var(--text);background:none;border:none;cursor:pointer;}
+.register-row{margin-top:24px;font-size:13px;color:var(--muted);}
+.register-row a{display:block;font-weight:700;font-size:14px;color:var(--text);margin-top:3px;cursor:pointer;}
+
+/* ══ REGISTER ══ */
+.reg-header{background:var(--white);padding:14px 20px;display:flex;align-items:center;gap:12px;flex-shrink:0;border-bottom:1px solid var(--border);}
+.reg-title{font-size:17px;font-weight:700;color:var(--text);}
+.step-bar{display:flex;gap:5px;padding:12px 20px 0;flex-shrink:0;}
+.step-dot{height:4px;border-radius:2px;flex:1;background:var(--border);transition:background 0.3s;}
+.step-dot.done{background:var(--primary);}
+.step-lbl{font-size:12px;color:var(--muted);padding:7px 20px 12px;font-weight:600;flex-shrink:0;}
+.reg-body{padding:0 20px 32px;flex:1;overflow-y:auto;}
+.reg-body::-webkit-scrollbar{display:none;}
+
+/* ══ TIMETABLE GRID ══ */
+.tt-scroll{overflow-x:auto;}
+.tt-table{width:100%;border-collapse:collapse;font-size:10px;}
+.tt-table th{background:var(--primary);color:#fff;padding:8px 3px;text-align:center;font-size:9px;font-weight:700;}
+.tt-table td{border:1px solid var(--border);padding:0;}
+.tt-table td.slot-label{background:var(--bg);font-size:8px;font-weight:700;color:var(--muted);text-align:center;padding:3px 2px;line-height:1.3;white-space:nowrap;}
+.tt-table td.break-cell{background:#f3e5f5;text-align:center;font-size:9px;color:#7b1fa2;font-weight:700;padding:7px 2px;}
+.tt-btn{width:100%;min-height:48px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;background:var(--white);border:none;font-family:'DM Sans',sans-serif;padding:4px 2px;text-align:center;transition:background 0.15s;}
+.tt-btn:hover{background:var(--primary-light);}
+.tt-btn.filled{background:var(--primary-light);}
+.tt-btn.double{background:#e3f2fd;}
+.tt-btn-name{font-size:8px;font-weight:700;color:var(--primary);line-height:1.2;}
+.tt-btn-type{font-size:7px;color:var(--muted);}
+.tt-btn-plus{font-size:20px;color:var(--border);line-height:1;}
+.tt-empty-cell{min-height:48px;background:var(--bg);}
+
+/* ══ HOME ══ */
+.greeting-card{background:var(--white);border-radius:18px;padding:16px 18px;margin-bottom:14px;box-shadow:var(--shadow);}
+.greeting-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:3px;}
+.greeting-name{font-size:16px;font-weight:700;color:var(--text);}
+.weather-wrap{text-align:right;}
+.weather-temp{font-size:13px;font-weight:600;color:var(--text);}
+.weather-desc{font-size:10px;color:var(--muted);}
+.greeting-date{font-size:12px;color:var(--muted);margin-bottom:12px;}
+.view-sched{display:flex;align-items:center;justify-content:space-between;cursor:pointer;}
+.view-sched span{font-size:14px;font-weight:600;color:var(--text);}
+.home-btns{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
+.home-btn{background:var(--white);border:none;border-radius:14px;padding:16px 14px;cursor:pointer;box-shadow:var(--shadow);text-align:left;font-family:'DM Sans',sans-serif;}
+.home-btn-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;margin-bottom:8px;}
+.home-btn-label{font-size:13px;font-weight:700;color:var(--text);display:block;}
+.home-btn-sub{font-size:10px;color:var(--muted);}
+.att-card{background:var(--green-bg);border-radius:16px;padding:16px 18px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;}
+.att-pct{font-size:22px;font-weight:800;color:#2e7d32;}
+.att-time{font-size:10px;color:#6a9e6a;margin-top:2px;}
+.att-icon{width:40px;height:40px;background:var(--green);border-radius:11px;display:flex;align-items:center;justify-content:center;margin-bottom:8px;}
+.class-item{background:var(--white);border-radius:14px;padding:13px 15px;margin-bottom:10px;display:flex;align-items:center;gap:11px;box-shadow:var(--shadow);cursor:pointer;}
+.class-time-col{min-width:48px;}
+.class-time{font-size:12px;font-weight:700;color:var(--primary);}
+.class-dur{font-size:10px;color:var(--muted);}
+.class-dot{width:10px;height:10px;border-radius:50%;border:2px solid;flex-shrink:0;}
+.class-info{flex:1;}
+.class-name{font-size:13px;font-weight:600;color:var(--text);}
+.class-room{font-size:11px;color:var(--muted);margin-top:1px;}
+.class-pct-badge{font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;}
+
+/* ══ MARK ATTENDANCE ══ */
+.mark-hdr{background:var(--primary);padding:18px 20px;flex-shrink:0;}
+.mark-title{font-size:17px;font-weight:700;color:#fff;}
+.mark-date-lbl{font-size:12px;color:rgba(255,255,255,0.7);margin-top:3px;}
+.date-strip{display:flex;gap:8px;overflow-x:auto;padding:14px 16px 0;flex-shrink:0;}
+.date-strip::-webkit-scrollbar{display:none;}
+.date-chip{display:flex;flex-direction:column;align-items:center;padding:8px 10px;border-radius:12px;background:var(--white);cursor:pointer;flex-shrink:0;border:2px solid transparent;box-shadow:var(--shadow);}
+.date-chip.active{border-color:var(--primary);background:var(--primary-light);}
+.date-chip.today-chip{border-color:var(--green);}
+.dc-day{font-size:10px;font-weight:700;color:var(--muted);}
+.dc-num{font-size:15px;font-weight:800;color:var(--text);}
+.dc-mon{font-size:9px;color:var(--muted);}
+.mark-classes{padding:14px 16px;flex:1;}
+.mark-card{background:var(--white);border-radius:14px;padding:14px;margin-bottom:10px;box-shadow:var(--shadow);}
+.mark-card-name{font-size:14px;font-weight:700;color:var(--text);margin-bottom:2px;}
+.mark-card-time{font-size:11px;color:var(--muted);margin-bottom:11px;}
+.mark-btns{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.mark-btn{padding:10px;border:2px solid var(--border);border-radius:10px;background:none;cursor:pointer;font-size:13px;font-weight:700;font-family:'DM Sans',sans-serif;color:var(--muted);}
+.mark-btn.present{background:var(--green-bg);border-color:var(--green);color:#2e7d32;}
+.mark-btn.absent{background:var(--red-bg);border-color:var(--red);color:var(--red);}
+.holiday-notice{background:var(--red-bg);border-radius:14px;padding:20px;text-align:center;}
+.holiday-notice-title{font-size:15px;font-weight:700;color:var(--red);margin-bottom:6px;}
+.holiday-notice-sub{font-size:12px;color:var(--muted);}
+
+/* ══ SCHEDULE ══ */
+.sch-hdr{background:var(--primary);padding:16px 20px 0;flex-shrink:0;}
+.sch-toprow{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.sch-title-row{display:flex;align-items:center;gap:8px;}
+.sch-title{font-size:16px;font-weight:700;color:#fff;}
+.sch-hdr-btns{display:flex;gap:6px;flex-wrap:nowrap;}
+.sch-hdr-btn{background:rgba(255,255,255,0.15);border:none;cursor:pointer;color:#fff;font-size:10px;font-family:'DM Sans',sans-serif;display:flex;align-items:center;gap:4px;padding:6px 10px;border-radius:20px;font-weight:600;white-space:nowrap;}
+.sch-hdr-btn.danger{background:rgba(229,57,53,0.5);}
+.week-strip{display:flex;gap:3px;}
+.day-pill{flex:1;display:flex;flex-direction:column;align-items:center;padding:8px 2px 10px;cursor:pointer;border-radius:8px 8px 0 0;}
+.day-pill .dp-name{font-size:9px;color:rgba(255,255,255,0.6);font-weight:600;margin-bottom:3px;}
+.day-pill .dp-num{font-size:14px;font-weight:700;color:rgba(255,255,255,0.7);}
+.day-pill.active{background:var(--white);}
+.day-pill.active .dp-name{color:var(--muted);}
+.day-pill.active .dp-num{color:var(--text);}
+.day-pill.hol-day .dp-num{color:#ff8a80;}
+.sch-body{padding:14px;flex:1;}
+.sch-card{background:var(--white);border-radius:14px;padding:14px;margin-bottom:10px;display:flex;align-items:center;gap:11px;box-shadow:var(--shadow);position:relative;overflow:hidden;}
+.sch-type-bar{position:absolute;right:0;top:0;bottom:0;width:28px;display:flex;align-items:center;justify-content:center;writing-mode:vertical-rl;font-size:7px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#fff;border-radius:0 14px 14px 0;}
+.sch-info{flex:1;padding-right:32px;cursor:pointer;}
+.sch-name{font-size:13px;font-weight:700;color:var(--text);margin-bottom:2px;}
+.sch-time{font-size:11px;color:var(--muted);}
+.tap-btn{width:34px;height:34px;border-radius:9px;border:none;cursor:pointer;font-size:12px;font-weight:700;flex-shrink:0;font-family:'DM Sans',sans-serif;}
+.tap-btn.unmarked{background:var(--border);color:var(--muted);}
+.tap-btn.present{background:var(--green-bg);color:#2e7d32;}
+.tap-btn.absent{background:var(--red-bg);color:var(--red);}
+.holiday-banner{background:var(--red-bg);border:1px solid #ef9a9a;border-radius:12px;padding:14px;text-align:center;margin-bottom:12px;}
+.holiday-banner-title{font-size:14px;font-weight:700;color:var(--red);}
+.holiday-banner-sub{font-size:11px;color:var(--muted);margin-top:4px;}
+.no-class{padding:50px 20px;text-align:center;}
+.no-class-title{font-size:15px;font-weight:700;color:var(--text);margin-bottom:6px;}
+.no-class-sub{font-size:12px;color:var(--muted);line-height:1.5;}
+
+/* ══ TIMETABLE SCREEN ══ */
+.tt-screen-hdr{background:var(--white);padding:14px 20px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border);flex-shrink:0;}
+.tt-screen-title{font-size:17px;font-weight:700;color:var(--text);}
+.tt-edit-note{background:var(--primary-light);border-radius:10px;padding:12px;margin:14px 14px 0;font-size:12px;color:var(--primary);line-height:1.5;flex-shrink:0;}
+.tt-screen-content{padding:14px;overflow-x:auto;flex:1;}
+
+/* ══ SUBJECTS ══ */
+.sub-hdr{background:var(--white);padding:14px 20px;border-bottom:1px solid var(--border);flex-shrink:0;}
+.sub-hdr-title{font-size:18px;font-weight:700;color:var(--text);}
+.sub-hdr-sem{font-size:11px;color:var(--muted);margin-top:2px;font-weight:600;letter-spacing:1px;text-transform:uppercase;}
+.sub-card{background:var(--white);padding:15px 20px;display:flex;align-items:center;gap:13px;border-bottom:1px solid var(--border);cursor:pointer;}
+.sub-icon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff;flex-shrink:0;}
+.sub-info{flex:1;}
+.sub-name{font-size:13px;font-weight:700;color:var(--text);line-height:1.3;}
+.sub-teacher{font-size:11px;color:var(--muted);margin-top:1px;}
+.sub-right{text-align:right;}
+.sub-pct-val{font-size:15px;font-weight:800;}
+.sub-skip-lbl{font-size:10px;color:var(--muted);margin-top:2px;}
+
+/* ══ SUBJECT DETAIL ══ */
+.sub-det-hdr{background:var(--white);padding:13px 18px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border);flex-shrink:0;}
+.sub-det-title{font-size:12px;font-weight:700;color:var(--text);flex:1;line-height:1.3;}
+.sub-det-code{font-size:11px;color:var(--primary);font-weight:700;flex-shrink:0;}
+.sub-det-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;padding:14px;}
+.sub-det-stat{background:var(--white);border-radius:14px;padding:14px;text-align:center;box-shadow:var(--shadow);}
+.sub-det-stat-lbl{font-size:10px;color:var(--muted);margin-bottom:6px;line-height:1.3;}
+.sub-det-stat-val{font-size:20px;font-weight:800;}
+.rec-box{margin:0 14px 12px;border-radius:12px;padding:13px;}
+.rec-box.warn{background:var(--orange-bg);border-left:3px solid var(--orange);}
+.rec-box.safe{background:var(--green-bg);border-left:3px solid var(--green);}
+.rec-box.danger{background:var(--red-bg);border-left:3px solid var(--red);}
+.rec-title{font-size:12px;font-weight:700;color:var(--text);margin-bottom:3px;}
+.rec-text{font-size:12px;color:var(--muted);line-height:1.5;}
+.tl-wrap{padding:0 14px 20px;}
+.tl-lbl{font-size:10px;color:var(--muted);margin-bottom:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;}
+.tl-item{display:flex;gap:11px;padding-bottom:14px;position:relative;}
+.tl-item::before{content:'';position:absolute;left:7px;top:18px;bottom:0;width:2px;background:var(--border);}
+.tl-item:last-child::before{display:none;}
+.tl-dot{width:16px;height:16px;border-radius:50%;border:2px solid;background:var(--white);flex-shrink:0;margin-top:2px;}
+.tl-content{flex:1;}
+.tl-row{display:flex;justify-content:space-between;}
+.tl-date{font-size:12px;font-weight:600;color:var(--text);}
+.tl-topic{font-size:11px;color:var(--muted);margin-top:3px;background:var(--bg);padding:4px 9px;border-radius:7px;display:inline-block;}
+.tl-p{color:var(--green);font-size:12px;font-weight:700;}
+.tl-a{color:var(--red);font-size:12px;font-weight:700;}
+
+/* ══ ATTENDANCE OVERVIEW ══ */
+.bar-chart-card{background:var(--white);margin:12px 14px;border-radius:16px;padding:18px 12px;box-shadow:var(--shadow);}
+.bar-chart{display:flex;align-items:flex-end;gap:4px;height:100px;}
+.bar-col{display:flex;flex-direction:column;align-items:center;flex:1;gap:3px;}
+.bar{width:100%;border-radius:3px 3px 0 0;}
+.bar-lbl{font-size:9px;color:var(--muted);font-weight:600;}
+.total-box{background:var(--green-bg);border-radius:14px;padding:13px 16px;margin:0 14px 12px;display:flex;align-items:center;justify-content:space-between;}
+.att-sub-row{display:flex;align-items:center;gap:11px;padding:13px 14px;border-bottom:1px solid var(--border);cursor:pointer;}
+.att-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+.att-sub-name{flex:1;font-size:12px;font-weight:600;color:var(--text);line-height:1.3;}
+.att-sub-pct{font-size:14px;font-weight:700;}
+
+/* ══ WEEKLY PLANNER ══ */
+.wp-hdr{background:var(--primary);padding:18px 20px;flex-shrink:0;}
+.wp-title{font-size:17px;font-weight:700;color:#fff;}
+.wp-week{font-size:12px;color:rgba(255,255,255,0.7);margin-top:2px;margin-bottom:13px;}
+.wp-target-row{background:rgba(255,255,255,0.12);border-radius:12px;padding:11px 14px;display:flex;align-items:center;justify-content:space-between;}
+.wp-target-lbl{font-size:12px;color:rgba(255,255,255,0.85);font-weight:600;}
+.wp-target-in{background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.3);border-radius:8px;padding:6px 10px;font-size:15px;font-weight:800;color:#fff;width:66px;text-align:center;font-family:'DM Sans',sans-serif;outline:none;}
+.wp-table-wrap{padding:14px 14px 0;flex-shrink:0;}
+.wp-note{font-size:11px;color:var(--muted);margin-bottom:10px;font-weight:600;}
+.wp-table{width:100%;border-collapse:collapse;font-size:10px;}
+.wp-table th{background:var(--primary);color:#fff;padding:8px 2px;text-align:center;font-size:9px;font-weight:700;}
+.wp-table th:first-child{width:40px;}
+.wp-table td{border:1px solid var(--border);padding:0;}
+.wp-table td.wp-time{background:var(--bg);font-size:8px;font-weight:700;color:var(--muted);text-align:center;padding:2px;line-height:1.3;white-space:nowrap;}
+.wp-table td.wp-break{background:#f3e5f5;text-align:center;font-size:8px;color:#7b1fa2;font-weight:700;padding:5px 1px;}
+.wp-cell{width:100%;min-height:46px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;background:var(--white);border:none;font-family:'DM Sans',sans-serif;padding:3px 2px;text-align:center;transition:background 0.15s;}
+.wp-cell:hover{background:var(--primary-light);}
+.wp-cell.bunk{background:var(--red-bg);}
+.wp-cell.bunk .wp-cell-name{color:var(--red);}
+.wp-cell-empty{min-height:46px;background:var(--bg);width:100%;}
+.wp-cell-name{font-size:8px;font-weight:700;color:var(--primary);line-height:1.2;}
+.wp-cell-type{font-size:7px;color:var(--muted);}
+.wp-calc-btn{width:calc(100% - 28px);margin:12px 14px;background:var(--primary);color:#fff;border:none;border-radius:14px;padding:13px;font-size:14px;font-weight:700;font-family:'DM Sans',sans-serif;cursor:pointer;display:block;flex-shrink:0;}
+.wp-result-box{background:var(--white);border-radius:16px;padding:16px;box-shadow:var(--shadow);margin:0 14px 14px;}
+.wp-result-title{font-size:13px;font-weight:700;color:var(--text);margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid var(--border);}
+.wp-stat-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px;}
+.wp-stat{background:var(--bg);border-radius:10px;padding:10px 6px;text-align:center;}
+.wp-stat-val{font-size:17px;font-weight:800;color:var(--primary);}
+.wp-stat-lbl{font-size:9px;color:var(--muted);font-weight:600;margin-top:2px;line-height:1.3;}
+.wp-pct-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);}
+.wp-pct-row:last-child{border-bottom:none;}
+.wp-pct-lbl{font-size:12px;color:var(--muted);font-weight:600;}
+.wp-pct-val{font-size:14px;font-weight:800;}
+
+/* ══ PROFILE ══ */
+.profile-hdr{background:var(--primary);padding:30px 20px 22px;display:flex;flex-direction:column;align-items:center;flex-shrink:0;}
+.profile-avatar{width:72px;height:72px;border-radius:18px;background:rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:800;color:#fff;margin-bottom:12px;border:2px solid rgba(255,255,255,0.3);}
+.profile-name{font-size:18px;font-weight:700;color:#fff;margin-bottom:4px;}
+.profile-roll{font-size:13px;color:rgba(255,255,255,0.7);}
+.sem-prog-card{background:var(--white);margin:14px;border-radius:16px;padding:16px;box-shadow:var(--shadow);}
+.sem-prog-title{font-size:13px;font-weight:700;color:var(--text);margin-bottom:10px;}
+.sem-prog-bar-wrap{background:var(--bg);border-radius:8px;height:8px;overflow:hidden;margin-bottom:7px;}
+.sem-prog-bar{height:100%;background:var(--primary);border-radius:8px;}
+.sem-prog-labels{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);}
+.profile-stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0 14px 14px;}
+.profile-stat{background:var(--white);border-radius:14px;padding:16px;text-align:center;box-shadow:var(--shadow);}
+.profile-stat-val{font-size:24px;font-weight:800;color:var(--primary);margin-bottom:4px;}
+.profile-stat-lbl{font-size:11px;color:var(--muted);font-weight:600;}
+.acad-card{background:var(--white);margin:0 14px 14px;border-radius:16px;padding:16px;box-shadow:var(--shadow);}
+.acad-title{font-size:14px;font-weight:700;color:var(--text);margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid var(--border);}
+.acad-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.acad-lbl{font-size:11px;color:var(--muted);margin-bottom:3px;}
+.acad-val{font-size:13px;font-weight:700;color:var(--text);}
+
+/* Sub pct entry */
+.sub-pct-card{background:var(--white);border-radius:12px;padding:14px;margin-bottom:10px;box-shadow:var(--shadow);}
+.sub-pct-name{font-size:13px;font-weight:700;color:var(--text);margin-bottom:2px;}
+.sub-pct-code{font-size:10px;color:var(--muted);margin-bottom:10px;font-weight:600;}
+.sub-pct-row{display:flex;align-items:center;gap:10px;}
+.sub-pct-in{flex:1;background:var(--bg);border:1.5px solid var(--border);border-radius:10px;padding:10px 12px;font-size:15px;font-family:'DM Sans',sans-serif;color:var(--text);outline:none;font-weight:700;}
+.sub-pct-in:focus{border-color:var(--primary);}
+.sub-pct-in.err{border-color:var(--red);}
+.sub-pct-badge{font-size:14px;font-weight:800;min-width:54px;text-align:right;color:var(--muted);}
+
+.hidden{display:none!important;}
+</style>
+</head>
+<body>
+<div class="phone">
+
+<!-- SIDE MENU -->
+<div class="side-menu" id="side-menu">
+  <div class="menu-overlay" onclick="closeMenu()"></div>
+  <div class="menu-panel">
+    <div class="menu-avatar">AA</div>
+    <div class="menu-name">ALAKUNTA AKHIL</div>
+    <div class="menu-id">24BFA32003</div>
+    <div class="menu-div"></div>
+    <button class="menu-item" onclick="closeMenu();goTo('screen-home')">Home</button>
+    <button class="menu-item" onclick="closeMenu();goTo('screen-profile')">Profile</button>
+    <button class="menu-item" onclick="closeMenu()">Reset Password</button>
+    <button class="menu-item" onclick="closeMenu()">Help &amp; Support</button>
+    <div class="menu-div"></div>
+    <button class="menu-item logout" onclick="goTo('screen-login')">Logout</button>
+  </div>
+</div>
+
+<!-- MODAL: TT SLOT EDIT -->
+<div class="modal-overlay" id="modal-tt-slot">
+  <div class="modal-sheet">
+    <div class="modal-header">
+      <div class="modal-title" id="tt-slot-title">Edit Slot</div>
+      <button class="modal-close" onclick="closeModal('modal-tt-slot')">&#215;</button>
+    </div>
+    <div class="form-group">
+      <div class="form-label">Subject Name</div>
+      <input type="text" class="form-input" id="tt-slot-name" placeholder="E.G. DATABASE MANAGEMENT" oninput="this.value=this.value.toUpperCase()">
+    </div>
+    <div class="form-group">
+      <div class="form-label">Subject Code</div>
+      <input type="text" class="form-input" id="tt-slot-code" placeholder="E.G. CS302" oninput="this.value=this.value.toUpperCase()">
+    </div>
+    <div class="form-group">
+      <div class="form-label">Type</div>
+      <select class="form-input" id="tt-slot-type">
+        <option value="Theory">Theory Class</option>
+        <option value="Lab">Lab</option>
+        <option value="Tutorial">Tutorial</option>
+      </select>
+    </div>
+    <div class="info-box blue" style="margin-bottom:14px">
+      <div class="info-box-text">Consecutive slots with the same subject name are treated as a double period — only one attendance entry is generated.</div>
+    </div>
+    <button class="btn-primary" onclick="saveTTSlot()">Save</button>
+    <div style="margin-top:10px"><button class="btn-outline" onclick="clearTTSlot()">Clear Slot</button></div>
+  </div>
+</div>
+
+<!-- MODAL: SCHEDULE CALENDAR -->
+<div class="modal-overlay" id="modal-sch-cal">
+  <div class="modal-sheet">
+    <div class="modal-header">
+      <div class="modal-title">Jump to Date</div>
+      <button class="modal-close" onclick="closeModal('modal-sch-cal')">&#215;</button>
+    </div>
+    <div style="display:flex;gap:12px;margin-bottom:14px;flex-wrap:wrap;">
+      <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted)"><div style="width:10px;height:10px;border-radius:50%;background:var(--primary)"></div>Today</div>
+      <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted)"><div style="width:10px;height:10px;border-radius:50%;background:var(--red)"></div>Holiday</div>
+    </div>
+    <div class="cal-wrap">
+      <div class="cal-head">
+        <button class="cal-nav" onclick="changeSchCal(-1)">&#8249;</button>
+        <div class="cal-head-month" id="sch-cal-month-lbl">February 2026</div>
+        <button class="cal-nav" onclick="changeSchCal(1)">&#8250;</button>
+      </div>
+      <div class="cal-daynames"><div class="cal-dn">Su</div><div class="cal-dn">Mo</div><div class="cal-dn">Tu</div><div class="cal-dn">We</div><div class="cal-dn">Th</div><div class="cal-dn">Fr</div><div class="cal-dn">Sa</div></div>
+      <div class="cal-grid" id="sch-cal-grid"></div>
+    </div>
+    <div style="margin-top:12px"><button class="btn-primary" onclick="closeModal('modal-sch-cal')">Done</button></div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<!-- ════════════════════════════════════
+     SCREEN: LOGIN
+════════════════════════════════════ -->
+<div class="screen active" id="screen-login">
+  <div class="login-wrap">
+    <div class="login-logo">attend<span>X</span></div>
+    <div class="shield-wrap">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#3f51b5" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><circle cx="12" cy="11" r="2" fill="#3f51b5" stroke="none"/></svg>
+    </div>
+    <div class="login-title">Sign in to your Account</div>
+    <div class="login-sub">Enter your credentials to continue</div>
+    <div class="form-group">
+      <div class="form-label">Roll Number <span class="req">*</span></div>
+      <input type="text" class="form-input" placeholder="E.G. 24BFA32003" oninput="this.value=this.value.toUpperCase()">
+    </div>
+    <div class="form-group">
+      <div class="form-label">Password <span class="req">*</span></div>
+      <div class="pass-wrap">
+        <input type="password" class="form-input" id="lpass" placeholder="Enter your password">
+        <button class="eye-btn" onclick="togglePass('lpass')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
+      </div>
+    </div>
+    <div class="links-row">
+      <button class="link-btn">Trouble logging in?</button>
+      <button class="link-btn">Forgot Password?</button>
+    </div>
+    <button class="btn-primary" onclick="goTo('screen-home')">Login</button>
+    <div class="register-row">First time here?<a onclick="startReg()">Register here</a></div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════
+     SCREEN: REGISTER
+════════════════════════════════════ -->
+<div class="screen" id="screen-register">
+  <div class="reg-header">
+    <button class="back-btn" onclick="goBack()">&#8592;</button>
+    <div class="reg-title">Create Account</div>
+  </div>
+  <div class="step-bar">
+    <div class="step-dot done" id="sd1"></div><div class="step-dot" id="sd2"></div>
+    <div class="step-dot" id="sd3"></div><div class="step-dot" id="sd4"></div><div class="step-dot" id="sd5"></div>
+  </div>
+  <div class="step-lbl" id="step-lbl">Step 1 of 5 — Personal Info</div>
+
+  <!-- Step 1 -->
+  <div class="reg-body" id="rs1">
+    <div class="form-group"><div class="form-label">Full Name <span class="req">*</span></div><input type="text" class="form-input" placeholder="E.G. ALAKUNTA AKHIL" oninput="this.value=this.value.toUpperCase()"></div>
+    <div class="form-group"><div class="form-label">Roll Number <span class="req">*</span></div><input type="text" class="form-input" placeholder="E.G. 24BFA32003" oninput="this.value=this.value.toUpperCase()"></div>
+    <div class="form-group">
+      <div class="form-label">Password <span class="req">*</span></div>
+      <div class="pass-wrap"><input type="password" class="form-input" id="rpass" placeholder="Create a password"><button class="eye-btn" onclick="togglePass('rpass')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button></div>
+    </div>
+    <button class="btn-primary" onclick="goStep(2)">Next</button>
+  </div>
+
+  <!-- Step 2 -->
+  <div class="reg-body hidden" id="rs2">
+    <div class="form-group"><div class="form-label">College Name <span class="req">*</span></div><input type="text" class="form-input" placeholder="E.G. SVCE TIRUPATI" oninput="this.value=this.value.toUpperCase()"></div>
+    <div class="form-group"><div class="form-label">Degree</div><input type="text" class="form-input" placeholder="E.G. B.TECH" oninput="this.value=this.value.toUpperCase()"></div>
+    <div class="form-group"><div class="form-label">Branch / Program <span class="req">*</span></div><input type="text" class="form-input" placeholder="E.G. CSE(CSD)" oninput="this.value=this.value.toUpperCase()"></div>
+    <div class="input-row">
+      <div class="form-group"><div class="form-label">Batch</div><input type="text" class="form-input" placeholder="2024-25" oninput="this.value=this.value.toUpperCase()"></div>
+      <div class="form-group"><div class="form-label">Semester</div><input type="number" class="form-input" placeholder="4"></div>
+    </div>
+    <div class="input-row">
+      <div class="form-group"><div class="form-label">Section</div><input type="text" class="form-input" placeholder="A" oninput="this.value=this.value.toUpperCase()"></div>
+      <div class="form-group"><div class="form-label">Threshold %</div><input type="number" class="form-input" value="75" min="60" max="100"></div>
+    </div>
+    <button class="btn-primary" onclick="goStep(3)">Next</button>
+  </div>
+
+  <!-- Step 3: Calendar + holidays -->
+  <div class="reg-body hidden" id="rs3">
+    <div class="info-box blue"><div class="info-box-title">Academic Calendar</div><div class="info-box-text">Enter your semester dates and mark known holidays from your college's Academic Calendar.</div></div>
+    <div class="form-group">
+      <div class="form-label">Semester Start Date <span class="req">*</span></div>
+      <input type="date" class="form-input" id="sem-start" onchange="validateDates()">
+    </div>
+    <div class="form-group">
+      <div class="form-label">Semester End Date <span class="req">*</span></div>
+      <input type="date" class="form-input" id="sem-end" onchange="validateDates()">
+      <div class="err-msg hidden" id="end-err">End date must be after start date</div>
+    </div>
+    <div class="form-group">
+      <div class="form-label">Mark Holidays <span style="font-size:10px;font-weight:400;color:var(--muted)">(tap date to toggle)</span></div>
+      <div class="cal-wrap">
+        <div class="cal-head">
+          <button class="cal-nav" onclick="changeHolCal(-1)">&#8249;</button>
+          <div class="cal-head-month" id="hol-cal-month">February 2026</div>
+          <button class="cal-nav" onclick="changeHolCal(1)">&#8250;</button>
+        </div>
+        <div class="cal-daynames"><div class="cal-dn">Su</div><div class="cal-dn">Mo</div><div class="cal-dn">Tu</div><div class="cal-dn">We</div><div class="cal-dn">Th</div><div class="cal-dn">Fr</div><div class="cal-dn">Sa</div></div>
+        <div class="cal-grid" id="hol-cal-grid"></div>
+      </div>
+      <div style="font-size:12px;color:var(--primary);font-weight:700;margin-top:8px" id="hol-count">0 holidays marked</div>
+    </div>
+    <button class="btn-primary" onclick="goStep(4)">Next</button>
+  </div>
+
+  <!-- Step 4: Timetable -->
+  <div class="reg-body hidden" id="rs4">
+    <div class="info-box blue" style="margin-bottom:12px">
+      <div class="info-box-text">Tap any cell to add a subject. Lunch break (12:15–1:15) is fixed — no attendance is generated for it. Same name in consecutive slots = double period.</div>
+    </div>
+    <div class="tt-scroll">
+      <table class="tt-table" id="reg-tt"></table>
+    </div>
+    <div style="margin-top:14px"><button class="btn-primary" onclick="goStep(5)">Next</button></div>
+  </div>
+
+  <!-- Step 5: Current Attendance % -->
+  <div class="reg-body hidden" id="rs5">
+    <div class="info-box orange"><div class="info-box-title">Current Attendance</div><div class="info-box-text">Enter your attendance percentage for each subject from your college portal (e.g. 74.66).</div></div>
+    <div id="sub-pct-list"></div>
+    <div style="background:var(--primary-light);border-radius:12px;padding:14px;margin-bottom:16px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <div style="font-size:13px;font-weight:700;color:var(--primary)">Overall Average</div>
+        <div style="font-size:22px;font-weight:800;" id="overall-avg-val" class="overall-avg-display">— %</div>
+      </div>
+      <div class="err-msg hidden" id="overall-err">Overall average cannot exceed 100%</div>
+    </div>
+    <button class="btn-primary" onclick="finishReg()">Complete Setup</button>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════
+     SCREEN: HOME
+════════════════════════════════════ -->
+<div class="screen" id="screen-home">
+  <div class="topnav">
+    <button class="menu-btn" onclick="openMenu()"><span></span><span></span><span></span></button>
+    <div class="nav-logo">attend<span>X</span></div>
+    <button class="notif-btn"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="4"/><path d="M8 11h8M8 15h5"/></svg><div class="notif-dot"></div></button>
+  </div>
+  <div style="padding:0 16px;flex:1;overflow-y:auto;padding-bottom:4px;">
+    <!-- Greeting -->
+    <div class="greeting-card">
+      <div class="greeting-top">
+        <div class="greeting-name">Hi Alakunta Akhil,</div>
+        <div class="weather-wrap"><div class="weather-temp">29°C</div><div class="weather-desc">Partly Cloudy</div></div>
+      </div>
+      <div class="greeting-date" id="home-date">Good Morning, Saturday 28 February</div>
+      <div class="divider"></div>
+      <div class="view-sched" onclick="goTo('screen-schedule')">
+        <span>View Schedule</span>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>
+      </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="home-btns">
+      <button class="home-btn" onclick="goTo('screen-mark')">
+        <div class="home-btn-icon" style="background:#e8f5e9"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4caf50" stroke-width="2.2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg></div>
+        <span class="home-btn-label">Mark Attendance</span>
+        <div class="home-btn-sub">Update today's classes</div>
+      </button>
+      <button class="home-btn" onclick="goTo('screen-timetable')">
+        <div class="home-btn-icon" style="background:var(--primary-light)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2.2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18M9 15h6M9 19h4"/></svg></div>
+        <span class="home-btn-label">Timetable</span>
+        <div class="home-btn-sub">View &amp; edit schedule</div>
+      </button>
+    </div>
+
+    <!-- Overall Attendance -->
+    <div class="section-label">Attendance Overview</div>
+    <div class="att-card" onclick="goTo('screen-attendance')">
+      <div>
+        <div class="att-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2"><rect x="3" y="4" width="18" height="18" rx="3"/><path d="M16 2v4M8 2v4M3 10h18"/><path d="M9 16l2 2 4-4"/></svg></div>
+        <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:2px;">Overall Attendance</div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:8px;">Tap to view subject breakdown</div>
+        <div class="att-pct">72.02%</div>
+        <div class="att-time">Updated today</div>
+      </div>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4caf50" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+    </div>
+
+    <!-- Today's Classes -->
+    <div class="section-label">Today's Classes</div>
+    <div class="class-item" onclick="goTo('screen-subject-detail')">
+      <div class="class-time-col"><div class="class-time">9:15</div><div class="class-dur">1hr</div></div>
+      <div class="class-dot" style="border-color:#26a69a;background:#e0f2f1;"></div>
+      <div class="class-info"><div class="class-name">Universal Human Values</div><div class="class-room">Room 101</div></div>
+      <div class="class-pct-badge" style="background:#fff3e0;color:#e65100;">67.74%</div>
+    </div>
+    <div class="class-item" onclick="goTo('screen-subject-detail')">
+      <div class="class-time-col"><div class="class-time">10:15</div><div class="class-dur">1hr</div></div>
+      <div class="class-dot" style="border-color:#ef5350;background:#ffebee;"></div>
+      <div class="class-info"><div class="class-name">Statistical Methods for DS</div><div class="class-room">Room 304</div></div>
+      <div class="class-pct-badge" style="background:#fff3e0;color:#e65100;">70.97%</div>
+    </div>
+    <div class="class-item" onclick="goTo('screen-subject-detail')">
+      <div class="class-time-col"><div class="class-time">11:15</div><div class="class-dur">1hr</div></div>
+      <div class="class-dot" style="border-color:#42a5f5;background:#e3f2fd;"></div>
+      <div class="class-info"><div class="class-name">Database Management Systems</div><div class="class-room">Room 212</div></div>
+      <div class="class-pct-badge" style="background:#fdecea;color:#c62828;">61.54%</div>
+    </div>
+    <div style="height:80px"></div>
+  </div>
+  <div class="bottom-nav">
+    <button class="nav-item active" onclick="navTo(this,'screen-home')"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span>Home</span></button>
+    <button class="nav-item" onclick="navTo(this,'screen-subjects')"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg><span>Subjects</span></button>
+    <button class="nav-center-btn" onclick="goTo('screen-schedule')"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2"><rect x="3" y="4" width="18" height="18" rx="3"/><path d="M16 2v4M8 2v4M3 10h18"/><path d="M9 16l2 2 4-4"/></svg></button>
+    <button class="nav-item" onclick="navTo(this,'screen-weekly')"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18M8 14h.01M12 14h.01M16 14h.01"/></svg><span>Planner</span></button>
+    <button class="nav-item" onclick="navTo(this,'screen-profile')"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>Profile</span></button>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════
+     SCREEN: MARK ATTENDANCE
+════════════════════════════════════ -->
+<div class="screen" id="screen-mark">
+  <div class="mark-hdr">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;">
+      <button class="back-btn" style="color:#fff" onclick="goBack()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg></button>
+      <div class="mark-title">Mark Attendance</div>
+    </div>
+    <div class="mark-date-lbl" id="mark-date-lbl">Saturday, 28 February 2026</div>
+  </div>
+  <div class="date-strip" id="date-strip"></div>
+  <div class="mark-classes" id="mark-classes"></div>
+  <div style="padding:0 16px 16px;flex-shrink:0;">
+    <button class="btn-primary" onclick="goBack();showToast('Attendance saved!')">Save Attendance</button>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════
+     SCREEN: SCHEDULE
+════════════════════════════════════ -->
+<div class="screen" id="screen-schedule">
+  <div class="sch-hdr">
+    <div class="sch-toprow">
+      <div class="sch-title-row">
+        <button class="back-btn" style="color:#fff" onclick="goBack()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg></button>
+        <div class="sch-title">Schedule</div>
+      </div>
+      <div class="sch-hdr-btns">
+        <button class="sch-hdr-btn" onclick="openSchCalModal()">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+          <span id="sch-month-lbl">Feb 2026</span>
+        </button>
+        <button class="sch-hdr-btn" id="hol-toggle-btn" onclick="toggleSelectedDayHoliday()">Mark Holiday</button>
+      </div>
+    </div>
+    <div class="week-strip" id="week-strip"></div>
+  </div>
+  <div class="sch-body" id="sch-body" style="flex:1;overflow-y:auto;"></div>
+</div>
+
+<!-- ════════════════════════════════════
+     SCREEN: TIMETABLE
+════════════════════════════════════ -->
+<div class="screen" id="screen-timetable">
+  <div class="tt-screen-hdr">
+    <button class="back-btn" onclick="goBack()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg></button>
+    <div class="tt-screen-title">Timetable</div>
+    <div style="margin-left:auto;"><button style="background:var(--primary);color:#fff;border:none;border-radius:10px;padding:7px 14px;font-size:12px;font-weight:700;font-family:'DM Sans',sans-serif;cursor:pointer;" onclick="showToast('Changes saved to schedule')">Save</button></div>
+  </div>
+  <div class="tt-edit-note">Tap any slot to edit subject details. Changes reflect automatically in your daily schedule. Lunch (12:15–1:15) is fixed.</div>
+  <div class="tt-screen-content">
+    <table class="tt-table" id="main-tt"></table>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════
+     SCREEN: SUBJECTS
+════════════════════════════════════ -->
+<div class="screen" id="screen-subjects">
+  <div class="sub-hdr"><div class="sub-hdr-title">My Subjects</div><div class="sub-hdr-sem">IV Semester</div></div>
+  <div id="subjects-list" style="flex:1;overflow-y:auto;"></div>
+  <div class="bottom-nav">
+    <button class="nav-item" onclick="navTo(this,'screen-home')"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span>Home</span></button>
+    <button class="nav-item active" onclick="navTo(this,'screen-subjects')"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg><span>Subjects</span></button>
+    <button class="nav-center-btn" onclick="goTo('screen-schedule')"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2"><rect x="3" y="4" width="18" height="18" rx="3"/><path d="M16 2v4M8 2v4M3 10h18"/><path d="M9 16l2 2 4-4"/></svg></button>
+    <button class="nav-item" onclick="navTo(this,'screen-weekly')"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18M8 14h.01M12 14h.01M16 14h.01"/></svg><span>Planner</span></button>
+    <button class="nav-item" onclick="navTo(this,'screen-profile')"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>Profile</span></button>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════
+     SCREEN: SUBJECT DETAIL
+════════════════════════════════════ -->
+<div class="screen" id="screen-subject-detail">
+  <div class="sub-det-hdr">
+    <button class="back-btn" onclick="goBack()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg></button>
+    <div class="sub-det-title">STATISTICAL METHODS FOR DATA SCIENCE</div>
+    <div class="sub-det-code">MA404</div>
+  </div>
+  <div style="flex:1;overflow-y:auto;">
+    <div class="sub-det-stats">
+      <div class="sub-det-stat"><div class="sub-det-stat-lbl">Subject Attendance</div><div class="sub-det-stat-val" style="color:var(--orange);">70.97%</div></div>
+      <div class="sub-det-stat"><div class="sub-det-stat-lbl">Classes Per Week</div><div class="sub-det-stat-val" style="color:var(--primary);">4</div></div>
+      <div class="sub-det-stat"><div class="sub-det-stat-lbl">Overall Average</div><div class="sub-det-stat-val" style="color:var(--orange);">72.02%</div></div>
+    </div>
+    <div class="rec-box warn"><div class="rec-title">Recovery Required</div><div class="rec-text">Attend next 4 consecutive classes to cross 75% for this subject. Avoid skipping any more classes.</div></div>
+    <div class="tl-wrap">
+      <div class="tl-lbl">Class Timeline</div>
+      <div class="tl-item"><div class="tl-dot" style="border-color:var(--green);background:var(--green);"></div><div class="tl-content"><div class="tl-row"><div><div class="tl-date">27 Feb 2026 — 10:15 AM</div><div class="tl-topic">Confidence limits and coefficient</div></div><div class="tl-p">Present</div></div></div></div>
+      <div class="tl-item"><div class="tl-dot" style="border-color:var(--green);background:var(--green);"></div><div class="tl-content"><div class="tl-row"><div><div class="tl-date">25 Feb 2026 — 1:15 PM</div><div class="tl-topic">Construction of CI</div></div><div class="tl-p">Present</div></div></div></div>
+      <div class="tl-item"><div class="tl-dot" style="border-color:var(--red);background:var(--red);"></div><div class="tl-content"><div class="tl-row"><div><div class="tl-date">13 Feb 2026 — 10:15 AM</div><div class="tl-topic">Introduction to hypothesis</div></div><div class="tl-a">Absent</div></div></div></div>
+      <div class="tl-item"><div class="tl-dot" style="border-color:var(--green);background:var(--green);"></div><div class="tl-content"><div class="tl-row"><div><div class="tl-date">11 Feb 2026 — 10:15 AM</div><div class="tl-topic">Sampling distributions</div></div><div class="tl-p">Present</div></div></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════
+     SCREEN: ATTENDANCE OVERVIEW
+════════════════════════════════════ -->
+<div class="screen" id="screen-attendance">
+  <div style="background:var(--white);padding:14px 20px;display:flex;align-items:center;gap:11px;border-bottom:1px solid var(--border);flex-shrink:0;">
+    <button class="back-btn" onclick="goBack()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg></button>
+    <div style="font-size:17px;font-weight:700;color:var(--text);">Attendance Overview</div>
+  </div>
+  <div style="flex:1;overflow-y:auto;">
+    <div class="bar-chart-card"><div class="bar-chart" id="bar-chart"></div></div>
+    <div class="total-box"><div style="font-size:14px;font-weight:700;color:var(--text);">Total Average</div><div style="font-size:20px;font-weight:800;color:#2e7d32;">72.02%</div></div>
+    <div id="att-sub-list"></div>
+    <div style="height:80px"></div>
+  </div>
+  <div class="bottom-nav">
+    <button class="nav-item" onclick="navTo(this,'screen-home')"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span>Home</span></button>
+    <button class="nav-item" onclick="navTo(this,'screen-subjects')"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg><span>Subjects</span></button>
+    <button class="nav-center-btn" onclick="goTo('screen-schedule')"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2"><rect x="3" y="4" width="18" height="18" rx="3"/><path d="M16 2v4M8 2v4M3 10h18"/><path d="M9 16l2 2 4-4"/></svg></button>
+    <button class="nav-item" onclick="navTo(this,'screen-weekly')"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18M8 14h.01M12 14h.01M16 14h.01"/></svg><span>Planner</span></button>
+    <button class="nav-item" onclick="navTo(this,'screen-profile')"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>Profile</span></button>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════
+     SCREEN: WEEKLY PLANNER
+════════════════════════════════════ -->
+<div class="screen" id="screen-weekly">
+  <div class="wp-hdr">
+    <div class="wp-title">Weekly Planner</div>
+    <div class="wp-week" id="wp-week-lbl">Week: Mar 3 – Mar 8, 2026</div>
+    <div class="wp-target-row">
+      <div class="wp-target-lbl">Target % for this week</div>
+      <input class="wp-target-in" type="number" value="74" id="wp-target" min="60" max="100">
+    </div>
+  </div>
+  <div style="flex:1;overflow-y:auto;">
+    <div class="wp-table-wrap">
+      <div class="wp-note">Tap the classes you plan to skip, then tap Calculate.</div>
+      <div style="overflow-x:auto;"><table class="wp-table" id="wp-table"></table></div>
+    </div>
+    <button class="wp-calc-btn" onclick="calcWP()">Calculate Impact</button>
+    <div id="wp-result" class="hidden">
+      <div class="wp-result-box">
+        <div class="wp-result-title">Week Summary</div>
+        <div class="wp-stat-grid">
+          <div class="wp-stat"><div class="wp-stat-val" id="wp-total-cls">18</div><div class="wp-stat-lbl">Total Classes</div></div>
+          <div class="wp-stat"><div class="wp-stat-val" id="wp-must-cls" style="color:var(--red);">15</div><div class="wp-stat-lbl">Must Attend for Target</div></div>
+          <div class="wp-stat"><div class="wp-stat-val" id="wp-can-skip" style="color:var(--green);">3</div><div class="wp-stat-lbl">Can Skip</div></div>
+        </div>
+        <div class="wp-pct-row">
+          <div class="wp-pct-lbl">Current Attendance</div>
+          <div class="wp-pct-val" style="color:var(--orange);">72.02%</div>
+        </div>
+        <div class="wp-pct-row">
+          <div class="wp-pct-lbl">After Skipping Selected Classes</div>
+          <div class="wp-pct-val" id="wp-after-pct">—</div>
+        </div>
+        <div class="wp-pct-row">
+          <div class="wp-pct-lbl">Towards Required 75%</div>
+          <div class="wp-pct-val" id="wp-req-status">—</div>
+        </div>
+        <div class="wp-pct-row">
+          <div class="wp-pct-lbl">Towards Your Target</div>
+          <div class="wp-pct-val" id="wp-target-status">—</div>
+        </div>
+      </div>
+    </div>
+    <div style="height:80px;"></div>
+  </div>
+  <div class="bottom-nav">
+    <button class="nav-item" onclick="navTo(this,'screen-home')"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span>Home</span></button>
+    <button class="nav-item" onclick="navTo(this,'screen-subjects')"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg><span>Subjects</span></button>
+    <button class="nav-center-btn" onclick="goTo('screen-schedule')"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2"><rect x="3" y="4" width="18" height="18" rx="3"/><path d="M16 2v4M8 2v4M3 10h18"/><path d="M9 16l2 2 4-4"/></svg></button>
+    <button class="nav-item active" onclick="navTo(this,'screen-weekly')"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18M8 14h.01M12 14h.01M16 14h.01"/></svg><span>Planner</span></button>
+    <button class="nav-item" onclick="navTo(this,'screen-profile')"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>Profile</span></button>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════
+     SCREEN: PROFILE
+════════════════════════════════════ -->
+<div class="screen" id="screen-profile">
+  <div class="profile-hdr">
+    <div class="profile-avatar">AA</div>
+    <div class="profile-name">ALAKUNTA AKHIL</div>
+    <div class="profile-roll">24BFA32003</div>
+  </div>
+  <div style="flex:1;overflow-y:auto;">
+    <div class="sem-prog-card">
+      <div class="sem-prog-title">Semester Progress</div>
+      <div class="sem-prog-bar-wrap"><div class="sem-prog-bar" style="width:62%;"></div></div>
+      <div class="sem-prog-labels"><span>Jan 2026</span><span>62% complete</span><span>May 2026</span></div>
+    </div>
+    <div class="profile-stats">
+      <div class="profile-stat">
+        <div class="profile-stat-val">53</div>
+        <div class="profile-stat-lbl">Classes Remaining in Semester</div>
+      </div>
+      <div class="profile-stat">
+        <div class="profile-stat-val" style="color:var(--orange);">72.02%</div>
+        <div class="profile-stat-lbl">Current Overall Attendance</div>
+      </div>
+    </div>
+    <div class="acad-card">
+      <div class="acad-title">Academic Details</div>
+      <div class="acad-grid">
+        <div><div class="acad-lbl">Roll Number</div><div class="acad-val">24BFA32003</div></div>
+        <div><div class="acad-lbl">Batch</div><div class="acad-val">2024-25</div></div>
+        <div><div class="acad-lbl">Degree</div><div class="acad-val">B.TECH</div></div>
+        <div><div class="acad-lbl">Program</div><div class="acad-val">CSE (CSD)</div></div>
+        <div><div class="acad-lbl">Semester</div><div class="acad-val">4</div></div>
+        <div><div class="acad-lbl">Section</div><div class="acad-val">A</div></div>
+      </div>
+    </div>
+    <div style="height:80px;"></div>
+  </div>
+  <div class="bottom-nav">
+    <button class="nav-item" onclick="navTo(this,'screen-home')"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span>Home</span></button>
+    <button class="nav-item" onclick="navTo(this,'screen-subjects')"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg><span>Subjects</span></button>
+    <button class="nav-center-btn" onclick="goTo('screen-schedule')"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2"><rect x="3" y="4" width="18" height="18" rx="3"/><path d="M16 2v4M8 2v4M3 10h18"/><path d="M9 16l2 2 4-4"/></svg></button>
+    <button class="nav-item" onclick="navTo(this,'screen-weekly')"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18M8 14h.01M12 14h.01M16 14h.01"/></svg><span>Planner</span></button>
+    <button class="nav-item active" onclick="navTo(this,'screen-profile')"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>Profile</span></button>
+  </div>
+</div>
+
+</div><!-- /phone -->
+
+<script>
+// ════ DATA ════
+const SUBJECTS=[
+  {code:'SMF',name:'Statistical Methods for DS',teacher:'Sreenivasulu P',pct:70.97,color:'#ef5350',cpw:4},
+  {code:'OT', name:'Optimization Techniques',   teacher:'Hazarathaiah O',pct:90.00,color:'#66bb6a',cpw:3},
+  {code:'DMS',name:'Database Management Systems',teacher:'Muneendra Prabhu',pct:61.54,color:'#42a5f5',cpw:4},
+  {code:'DE', name:'Data Engineering',          teacher:'Jeevana Sagari K',pct:66.67,color:'#26c6da',cpw:3},
+  {code:'DTI',name:'Design Thinking & Innovation',teacher:'Tejeaswari Lingutla',pct:71.43,color:'#7e57c2',cpw:3},
+  {code:'UHV',name:'Universal Human Values',    teacher:'Nandini S',pct:67.74,color:'#26a69a',cpw:3},
+  {code:'EDA',name:'Exploratory Data Analysis', teacher:'',pct:79.17,color:'#ffa726',cpw:2},
+  {code:'DEL',name:'Data Engineering Lab',      teacher:'',pct:62.50,color:'#ec407a',cpw:2},
+];
+
+const DAYS_SHORT=['Mon','Tue','Wed','Thu','Fri','Sat'];
+const DAYS_FULL=['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+const MONTHS_FULL=['January','February','March','April','May','June','July','August','September','October','November','December'];
+const MONTHS_SHORT=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const WEEK_NAMES=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+
+// Slots: index 3 is lunch break (no attendance)
+const SLOTS=['9:15','10:15','11:15','LUNCH','1:15','2:15','3:15'];
+const SLOT_LABELS=['9:15–10:15','10:15–11:15','11:15–12:15','LUNCH BREAK','1:15–2:15','2:15–3:15','3:15–4:15'];
+const BREAK_IDX=3;
+
+// ttData[dayIdx][slotIdx] = {name, code, type} | null   (slot 3 = lunch, always null)
+const ttData={
+  0:[{name:'UHV',code:'HU301',type:'Theory'},{name:'SMF',code:'MA404',type:'Theory'},{name:'DMS',code:'CS302',type:'Theory'},null,null,null,null],
+  1:[{name:'OT',code:'MA302',type:'Theory'},{name:'DTI',code:'CS402',type:'Theory'},null,null,{name:'DEL',code:'CS391',type:'Lab'},{name:'DEL',code:'CS391',type:'Lab'},null],
+  2:[{name:'SMF',code:'MA404',type:'Theory'},{name:'DMS',code:'CS302',type:'Theory'},{name:'UHV',code:'HU301',type:'Theory'},null,null,null,null],
+  3:[{name:'UHV',code:'HU301',type:'Theory'},{name:'SMF',code:'MA404',type:'Theory'},{name:'DMS',code:'CS302',type:'Theory'},null,{name:'DE',code:'CS401',type:'Theory'},null,null],
+  4:[{name:'OT',code:'MA302',type:'Theory'},{name:'DTI',code:'CS402',type:'Theory'},{name:'EDA',code:'CS403',type:'Theory'},null,null,null,null],
+  5:[{name:'DE',code:'CS401',type:'Theory'},{name:'EDA',code:'CS403',type:'Theory'},null,null,null,null,null],
+};
+
+// scheduleData[weekdayIdx (0=Sun..6=Sat)] = []
+const scheduleData={
+  0:[{name:'Universal Human Values',time:'9:15–10:15 AM',type:'Theory',status:'unmarked'},{name:'Statistical Methods for DS',time:'10:15–11:15 AM',type:'Theory',status:'unmarked'},{name:'Database Management Systems',time:'11:15–12:15 PM',type:'Theory',status:'unmarked'}],
+  1:[{name:'Optimization Techniques',time:'9:15–10:15 AM',type:'Theory',status:'present'},{name:'Design Thinking & Innovation',time:'10:15–11:15 AM',type:'Theory',status:'present'},{name:'Data Engineering Lab',time:'1:15–3:15 PM',type:'Lab',status:'present'}],
+  2:[{name:'Statistical Methods for DS',time:'9:15–10:15 AM',type:'Theory',status:'present'},{name:'Database Management Systems',time:'11:15–12:15 PM',type:'Theory',status:'absent'},{name:'Universal Human Values',time:'2:15–3:15 PM',type:'Theory',status:'present'}],
+  3:[{name:'Universal Human Values',time:'9:15–10:15 AM',type:'Theory',status:'present'},{name:'Statistical Methods for DS',time:'10:15–11:15 AM',type:'Theory',status:'present'},{name:'Database Management Systems',time:'11:15–12:15 PM',type:'Theory',status:'present'},{name:'Data Engineering',time:'1:15–2:15 PM',type:'Theory',status:'present'}],
+  4:[{name:'Optimization Techniques',time:'9:15–10:15 AM',type:'Theory',status:'present'},{name:'Design Thinking & Innovation',time:'10:15–11:15 AM',type:'Theory',status:'present'},{name:'Exploratory Data Analysis',time:'11:15–12:15 PM',type:'Theory',status:'present'}],
+  5:[{name:'Data Engineering',time:'9:15–10:15 AM',type:'Theory',status:'present'},{name:'Exploratory Data Analysis',time:'10:15–11:15 AM',type:'Theory',status:'present'}],
+  6:[],
+};
+
+// ════ STATE ════
+let navStack=['screen-login'];
+let holidayKeys=new Set(); // "YYYY-M-D"
+let holCalCur=new Date(2026,1,1);
+let schCalCur=new Date(2026,1,1);
+let selectedSchDayIdx=new Date().getDay(); // 0=Sun..6=Sat (current weekday)
+let selectedSchDateKey='';
+let currentTTEdit={di:0,si:0};
+let wpSkipped=new Set();
+
+// ════ UTILS ════
+function dateKey(d){return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;}
+function pctColor(p){return p>=75?'var(--green)':p>=65?'var(--orange)':'var(--red)';}
+function togglePass(id){const e=document.getElementById(id);e.type=e.type==='password'?'text':'password';}
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.style.opacity='1';t.style.transform='translateX(-50%) translateY(0)';
+  clearTimeout(t._tid);
+  t._tid=setTimeout(()=>{t.style.opacity='0';t.style.transform='translateX(-50%) translateY(20px)';},2200);
+}
+
+// ════ NAV ════
+function goTo(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  const sc=document.getElementById(id);
+  sc.classList.add('active');
+  sc.scrollTop=0;
+  navStack.push(id);
+  if(id==='screen-schedule')renderSchedule();
+  if(id==='screen-subjects')renderSubjects();
+  if(id==='screen-attendance')renderAttendance();
+  if(id==='screen-weekly')renderWeeklyPlanner();
+  if(id==='screen-mark')renderMarkScreen();
+  if(id==='screen-timetable')renderMainTT();
+}
+function goBack(){
+  navStack.pop();
+  const prev=navStack[navStack.length-1]||'screen-home';
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(prev).classList.add('active');
+}
+function navTo(btn,id){
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  if(btn)btn.classList.add('active');
+  goTo(id);
+}
+function openMenu(){document.getElementById('side-menu').classList.add('open');}
+function closeMenu(){document.getElementById('side-menu').classList.remove('open');}
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+
+// ════ HOME GREETING ════
+(function(){
+  const h=new Date().getHours();
+  const g=h<12?'Good Morning':h<17?'Good Afternoon':'Good Evening';
+  const n=new Date();
+  document.getElementById('home-date').textContent=`${g}, ${WEEK_NAMES[n.getDay()]} ${n.getDate()} ${MONTHS_FULL[n.getMonth()]}`;
+})();
+
+// ════ REGISTER ════
+function startReg(){
+  goTo('screen-register');
+  goStep(1);
+  renderHolCal();
+  buildTT('reg-tt',true);
+  buildSubPctList();
+}
+function goStep(n){
+  for(let i=1;i<=5;i++){
+    document.getElementById('rs'+i).classList.toggle('hidden',i!==n);
+    document.getElementById('sd'+i).classList.toggle('done',i<=n);
+  }
+  const L=['','Step 1 of 5 — Personal Info','Step 2 of 5 — Academic Details','Step 3 of 5 — Academic Calendar','Step 4 of 5 — Class Schedule','Step 5 of 5 — Current Attendance'];
+  document.getElementById('step-lbl').textContent=L[n];
+}
+function validateDates(){
+  const s=document.getElementById('sem-start').value;
+  const e=document.getElementById('sem-end').value;
+  if(s&&e) document.getElementById('end-err').classList.toggle('hidden',new Date(e)>new Date(s));
+}
+function finishReg(){
+  let hasErr=false;
+  SUBJECTS.forEach((_,i)=>{
+    const v=parseFloat(document.getElementById('pct-'+i)?.value);
+    if(!isNaN(v)&&v>100)hasErr=true;
+  });
+  if(hasErr){showToast('Fix errors before continuing');return;}
+  goTo('screen-home');
+}
+
+// ════ HOLIDAY CALENDAR (register) ════
+function renderHolCal(){
+  const y=holCalCur.getFullYear(),m=holCalCur.getMonth();
+  document.getElementById('hol-cal-month').textContent=`${MONTHS_FULL[m]} ${y}`;
+  const first=new Date(y,m,1).getDay();
+  const total=new Date(y,m+1,0).getDate();
+  const today=new Date();
+  let html='';
+  for(let i=0;i<first;i++)html+='<div class="cal-cell empty"></div>';
+  for(let d=1;d<=total;d++){
+    const k=`${y}-${m}-${d}`;
+    const isTd=today.getDate()===d&&today.getMonth()===m&&today.getFullYear()===y;
+    const isSun=new Date(y,m,d).getDay()===0;
+    const isHol=holidayKeys.has(k);
+    let cls='cal-cell'+(isHol?' holiday':isTd?' today':isSun?' sunday':'');
+    html+=`<div class="${cls}" onclick="toggleHol('${k}')">${d}</div>`;
+  }
+  document.getElementById('hol-cal-grid').innerHTML=html;
+  document.getElementById('hol-count').textContent=`${holidayKeys.size} holiday${holidayKeys.size!==1?'s':''} marked`;
+}
+function changeHolCal(d){holCalCur.setMonth(holCalCur.getMonth()+d);renderHolCal();}
+function toggleHol(k){holidayKeys.has(k)?holidayKeys.delete(k):holidayKeys.add(k);renderHolCal();}
+
+// ════ TIMETABLE BUILDER ════
+function buildTT(tableId, editable){
+  const table=document.getElementById(tableId);
+  if(!table)return;
+  let html=`<thead><tr><th>Slot</th>${DAYS_SHORT.map(d=>`<th>${d}</th>`).join('')}</tr></thead><tbody>`;
+  for(let si=0;si<SLOTS.length;si++){
+    if(si===BREAK_IDX){
+      html+=`<tr><td class="slot-label" style="font-size:7px;">LUNCH</td>`;
+      for(let di=0;di<6;di++) html+=`<td class="break-cell">BREAK</td>`;
+      html+=`</tr>`;
+      continue;
+    }
+    html+=`<tr><td class="slot-label">${SLOTS[si]}</td>`;
+    for(let di=0;di<6;di++){
+      const cell=ttData[di]?ttData[di][si]:null;
+      const prevCell=si>0&&si-1!==BREAK_IDX&&ttData[di]?ttData[di][si-1]:null;
+      const isDouble=cell&&prevCell&&prevCell.name===cell.name;
+      if(cell){
+        const btnCls=`tt-btn filled${isDouble?' double':''}`;
+        if(editable){
+          html+=`<td><button class="${btnCls}" onclick="openTTSlot(${di},${si})"><div class="tt-btn-name">${cell.name}</div><div class="tt-btn-type">${cell.type}</div></button></td>`;
+        } else {
+          html+=`<td><div class="${btnCls}"><div class="tt-btn-name">${cell.name}</div><div class="tt-btn-type">${cell.type}</div></div></td>`;
+        }
+      } else {
+        if(editable){
+          html+=`<td><button class="tt-btn" onclick="openTTSlot(${di},${si})"><div class="tt-btn-plus">+</div></button></td>`;
+        } else {
+          html+=`<td><div class="tt-cell-empty" style="min-height:48px;background:var(--bg);display:block;"></div></td>`;
+        }
+      }
+    }
+    html+=`</tr>`;
+  }
+  html+=`</tbody>`;
+  table.innerHTML=html;
+}
+function renderMainTT(){buildTT('main-tt',true);}
+function openTTSlot(di,si){
+  currentTTEdit={di,si};
+  const c=ttData[di]?ttData[di][si]:null;
+  document.getElementById('tt-slot-title').textContent=`${DAYS_FULL[di]} — ${SLOT_LABELS[si]}`;
+  document.getElementById('tt-slot-name').value=c?c.name:'';
+  document.getElementById('tt-slot-code').value=c?c.code:'';
+  document.getElementById('tt-slot-type').value=c?c.type:'Theory';
+  openModal('modal-tt-slot');
+}
+function saveTTSlot(){
+  const{di,si}=currentTTEdit;
+  const name=document.getElementById('tt-slot-name').value.toUpperCase().trim();
+  const code=document.getElementById('tt-slot-code').value.toUpperCase().trim();
+  const type=document.getElementById('tt-slot-type').value;
+  if(!ttData[di])ttData[di]=Array(7).fill(null);
+  ttData[di][si]=name?{name,code,type}:null;
+  closeModal('modal-tt-slot');
+  buildTT('main-tt',true);
+  buildTT('reg-tt',true);
+  showToast('Slot saved');
+}
+function clearTTSlot(){
+  const{di,si}=currentTTEdit;
+  if(ttData[di])ttData[di][si]=null;
+  closeModal('modal-tt-slot');
+  buildTT('main-tt',true);
+  buildTT('reg-tt',true);
+}
+
+// ════ SUBJECT % ENTRY ════
+function buildSubPctList(){
+  document.getElementById('sub-pct-list').innerHTML=SUBJECTS.map((s,i)=>`
+    <div class="sub-pct-card">
+      <div class="sub-pct-name">${s.name}</div>
+      <div class="sub-pct-code">${s.code}</div>
+      <div class="sub-pct-row">
+        <input type="number" class="sub-pct-in" id="pct-${i}" placeholder="e.g. 74.66" min="0" max="100" step="0.01" oninput="calcOverallAvg()">
+        <div class="sub-pct-badge" id="pct-badge-${i}">—</div>
+      </div>
+    </div>`).join('');
+}
+function calcOverallAvg(){
+  let sum=0,cnt=0;
+  SUBJECTS.forEach((_,i)=>{
+    const v=parseFloat(document.getElementById('pct-'+i)?.value);
+    const inp=document.getElementById('pct-'+i);
+    const bdg=document.getElementById('pct-badge-'+i);
+    if(!isNaN(v)&&v>=0&&v<=100){
+      inp.classList.remove('err');
+      bdg.textContent=v.toFixed(2)+'%';
+      bdg.style.color=pctColor(v);
+      sum+=v;cnt++;
+    } else if(!isNaN(v)&&v>100){
+      inp.classList.add('err');
+      bdg.textContent='!';bdg.style.color='var(--red)';
+    } else {
+      bdg.textContent='—';bdg.style.color='var(--muted)';
+    }
+  });
+  const avg=cnt>0?sum/cnt:0;
+  const el=document.getElementById('overall-avg-val');
+  el.textContent=cnt>0?avg.toFixed(2)+'%':'— %';
+  el.style.color=pctColor(avg);
+  document.getElementById('overall-err').classList.toggle('hidden',avg<=100);
+}
+
+// ════ MARK ATTENDANCE ════
+function renderMarkScreen(){
+  const today=new Date();
+  const dNames=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const mth=MONTHS_SHORT;
+  let html='';
+  for(let i=-3;i<=3;i++){
+    const d=new Date(today);d.setDate(today.getDate()+i);
+    const k=dateKey(d);
+    const isHol=holidayKeys.has(k);
+    html+=`<div class="date-chip ${i===0?'today-chip active':''}" onclick="selectMarkDay(this,${d.getDay()},${i},'${k}')">
+      <div class="dc-day">${dNames[d.getDay()]}</div>
+      <div class="dc-num"${isHol?' style="color:var(--red)"':''}>${d.getDate()}</div>
+      <div class="dc-mon">${mth[d.getMonth()]}</div>
+    </div>`;
+  }
+  document.getElementById('date-strip').innerHTML=html;
+  const k=dateKey(today);
+  renderMarkClasses(today.getDay(),k);
+  document.getElementById('mark-date-lbl').textContent=`${WEEK_NAMES[today.getDay()]}, ${today.getDate()} ${MONTHS_FULL[today.getMonth()]} ${today.getFullYear()}`;
+}
+function selectMarkDay(el,dayIdx,offset,key){
+  document.querySelectorAll('.date-chip').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+  const d=new Date();d.setDate(d.getDate()+offset);
+  document.getElementById('mark-date-lbl').textContent=`${WEEK_NAMES[d.getDay()]}, ${d.getDate()} ${MONTHS_FULL[d.getMonth()]} ${d.getFullYear()}`;
+  renderMarkClasses(dayIdx,key);
+}
+function renderMarkClasses(dayIdx,key){
+  const wrap=document.getElementById('mark-classes');
+  if(holidayKeys.has(key)){
+    wrap.innerHTML=`<div class="holiday-notice"><div class="holiday-notice-title">Holiday</div><div class="holiday-notice-sub">This day is marked as a holiday. No attendance recorded.</div></div>`;
+    return;
+  }
+  const cls=scheduleData[dayIdx]||[];
+  if(!cls.length){
+    wrap.innerHTML=`<div style="text-align:center;padding:40px;color:var(--muted);font-size:13px;">No classes on this day.</div>`;
+    return;
+  }
+  wrap.innerHTML=cls.map((c,i)=>`
+    <div class="mark-card">
+      <div class="mark-card-name">${c.name}</div>
+      <div class="mark-card-time">${c.time}</div>
+      <div class="mark-btns">
+        <button class="mark-btn ${c.status==='present'?'present':''}" onclick="setMarkStatus(this,'present')">Present</button>
+        <button class="mark-btn ${c.status==='absent'?'absent':''}" onclick="setMarkStatus(this,'absent')">Absent</button>
+      </div>
+    </div>`).join('');
+}
+function setMarkStatus(btn,type){
+  const [b0,b1]=btn.parentElement.children;
+  b0.className='mark-btn'+(type==='present'?' present':'');
+  b1.className='mark-btn'+(type==='absent'?' absent':'');
+}
+
+// ════ SCHEDULE ════
+function renderSchedule(){
+  const today=new Date();
+  const mth=`${MONTHS_SHORT[today.getMonth()]} ${today.getFullYear()}`;
+  document.getElementById('sch-month-lbl').textContent=mth;
+
+  // Week strip: Sun..Sat of current week
+  const dNames=['Su','Mo','Tu','We','Th','Fr','Sa'];
+  let html='';
+  for(let i=0;i<7;i++){
+    const d=new Date(today);d.setDate(today.getDate()-today.getDay()+i);
+    const k=dateKey(d);
+    const isHol=holidayKeys.has(k);
+    const isToday=i===today.getDay();
+    html+=`<div class="day-pill ${isToday?'active':''} ${isHol?'hol-day':''}" onclick="selectSchDay(${i},this,'${k}')">
+      <span class="dp-name">${dNames[i]}</span>
+      <span class="dp-num">${d.getDate()}</span>
+    </div>`;
+  }
+  document.getElementById('week-strip').innerHTML=html;
+
+  selectedSchDayIdx=today.getDay();
+  const todayKey=dateKey(today);
+  selectedSchDateKey=todayKey;
+  updateHolToggleBtn();
+  renderSchDay(today.getDay(),todayKey);
+}
+function selectSchDay(idx,el,key){
+  document.querySelectorAll('.day-pill').forEach(p=>p.classList.remove('active'));
+  el.classList.add('active');
+  selectedSchDayIdx=idx;
+  selectedSchDateKey=key;
+  updateHolToggleBtn();
+  renderSchDay(idx,key);
+}
+function updateHolToggleBtn(){
+  const isHol=holidayKeys.has(selectedSchDateKey);
+  const btn=document.getElementById('hol-toggle-btn');
+  btn.textContent=isHol?'Remove Holiday':'Mark Holiday';
+  btn.style.background=isHol?'rgba(229,57,53,0.5)':'rgba(255,255,255,0.15)';
+}
+function toggleSelectedDayHoliday(){
+  if(!selectedSchDateKey)return;
+  if(holidayKeys.has(selectedSchDateKey)){
+    holidayKeys.delete(selectedSchDateKey);
+    showToast('Holiday removed');
+  } else {
+    holidayKeys.add(selectedSchDateKey);
+    showToast('Day marked as holiday');
+  }
+  renderSchedule();
+}
+function renderSchDay(dayIdx,key){
+  const body=document.getElementById('sch-body');
+  const typeColors={Theory:'#42a5f5',Lab:'#ffa726',Tutorial:'#7e57c2'};
+  if(holidayKeys.has(key)){
+    body.innerHTML=`<div class="holiday-banner"><div class="holiday-banner-title">Holiday</div><div class="holiday-banner-sub">This day is marked as a holiday. No classes are scheduled.</div></div>`;
+    return;
+  }
+  const cls=scheduleData[dayIdx]||[];
+  if(!cls.length){
+    body.innerHTML=`<div class="no-class"><div class="no-class-title">No classes scheduled</div><div class="no-class-sub">Select another day to view its schedule.</div></div>`;
+    return;
+  }
+  body.innerHTML=cls.map((c,i)=>`
+    <div class="sch-card">
+      <div class="sch-info" onclick="goTo('screen-subject-detail')">
+        <div class="sch-name">${c.name}</div>
+        <div class="sch-time">${c.time}</div>
+      </div>
+      <button class="tap-btn ${c.status}" onclick="cycleStatus(this,${i},${dayIdx})">${c.status==='present'?'P':c.status==='absent'?'A':'?'}</button>
+      <div class="sch-type-bar" style="background:${typeColors[c.type]||'#42a5f5'}">${c.type}</div>
+    </div>`).join('');
+}
+function cycleStatus(btn,ci,di){
+  const seq=['unmarked','present','absent'];
+  const lbl=['?','P','A'];
+  const cur=btn.classList.contains('present')?1:btn.classList.contains('absent')?2:0;
+  const nxt=(cur+1)%3;
+  btn.className='tap-btn '+seq[nxt];
+  btn.textContent=lbl[nxt];
+  if(scheduleData[di]&&scheduleData[di][ci])scheduleData[di][ci].status=seq[nxt];
+}
+
+// Schedule calendar modal
+function openSchCalModal(){
+  schCalCur=new Date();
+  renderSchCalGrid();
+  openModal('modal-sch-cal');
+}
+function changeSchCal(d){schCalCur.setMonth(schCalCur.getMonth()+d);renderSchCalGrid();}
+function renderSchCalGrid(){
+  const y=schCalCur.getFullYear(),m=schCalCur.getMonth();
+  document.getElementById('sch-cal-month-lbl').textContent=`${MONTHS_FULL[m]} ${y}`;
+  const first=new Date(y,m,1).getDay();
+  const total=new Date(y,m+1,0).getDate();
+  const today=new Date();
+  let html='';
+  for(let i=0;i<first;i++)html+='<div class="cal-cell empty"></div>';
+  for(let d=1;d<=total;d++){
+    const k=`${y}-${m}-${d}`;
+    const isTd=today.getDate()===d&&today.getMonth()===m&&today.getFullYear()===y;
+    const isSun=new Date(y,m,d).getDay()===0;
+    const isHol=holidayKeys.has(k);
+    const dayIdx=new Date(y,m,d).getDay();
+    let cls='cal-cell'+(isHol?' holiday':isTd?' today':isSun?' sunday':'');
+    html+=`<div class="${cls}" onclick="jumpToSchDay('${k}',${dayIdx},${d})">${d}</div>`;
+  }
+  document.getElementById('sch-cal-grid').innerHTML=html;
+}
+function jumpToSchDay(key,dayIdx,date){
+  closeModal('modal-sch-cal');
+  // update week strip selection
+  document.querySelectorAll('.day-pill').forEach((p,i)=>{p.classList.toggle('active',i===dayIdx);});
+  selectedSchDayIdx=dayIdx;
+  selectedSchDateKey=key;
+  updateHolToggleBtn();
+  renderSchDay(dayIdx,key);
+}
+
+// ════ SUBJECTS ════
+function renderSubjects(){
+  document.getElementById('subjects-list').innerHTML=SUBJECTS.map((s,i)=>{
+    const c=pctColor(s.pct);
+    const skip=s.pct>=75?`Can skip ${Math.max(0,Math.floor((s.pct/100*62-0.75*62)))} more`:'Attend all';
+    return `<div class="sub-card" onclick="goTo('screen-subject-detail')">
+      <div class="sub-icon" style="background:${s.color}">${s.code}</div>
+      <div class="sub-info"><div class="sub-name">${s.name}</div><div class="sub-teacher">${s.teacher||'Faculty'}</div></div>
+      <div class="sub-right"><div class="sub-pct-val" style="color:${c}">${s.pct.toFixed(2)}%</div><div class="sub-skip-lbl">${skip}</div></div>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#b0b8c8" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+    </div>`;
+  }).join('');
+}
+
+// ════ ATTENDANCE OVERVIEW ════
+function renderAttendance(){
+  document.getElementById('bar-chart').innerHTML=SUBJECTS.map((s,i)=>{
+    const h=Math.max(4,(s.pct/100)*95);
+    const c=s.pct>=75?'#42a5f5':s.pct>=65?'#ffa726':'#ef5350';
+    return `<div class="bar-col"><div class="bar" style="height:${h}px;background:${c};"></div><div class="bar-lbl">${s.code}</div></div>`;
+  }).join('');
+  document.getElementById('att-sub-list').innerHTML=SUBJECTS.map((s,i)=>{
+    const c=pctColor(s.pct);
+    return `<div class="att-sub-row" onclick="goTo('screen-subject-detail')">
+      <div class="att-dot" style="background:${s.color};"></div>
+      <div class="att-sub-name">${s.name}</div>
+      <div class="att-sub-pct" style="color:${c};">${s.pct.toFixed(2)}%</div>
+    </div>`;
+  }).join('');
+}
+
+// ════ WEEKLY PLANNER ════
+function renderWeeklyPlanner(){
+  const today=new Date();
+  // Find Monday of this week
+  const mon=new Date(today);mon.setDate(today.getDate()-((today.getDay()+6)%7));
+  const sat=new Date(mon);sat.setDate(mon.getDate()+5);
+  document.getElementById('wp-week-lbl').textContent=
+    `Week: ${MONTHS_SHORT[mon.getMonth()]} ${mon.getDate()} – ${MONTHS_SHORT[sat.getMonth()]} ${sat.getDate()}, ${sat.getFullYear()}`;
+  wpSkipped.clear();
+  document.getElementById('wp-result').classList.add('hidden');
+  buildWPTable(mon);
+}
+function buildWPTable(mon){
+  const table=document.getElementById('wp-table');
+  // column headers with dates
+  let html=`<thead><tr><th>Slot</th>`;
+  for(let di=0;di<6;di++){
+    const d=new Date(mon);d.setDate(mon.getDate()+di);
+    html+=`<th>${DAYS_SHORT[di]}<br><span style="font-size:8px;opacity:0.75">${d.getDate()}</span></th>`;
+  }
+  html+=`</tr></thead><tbody>`;
+  for(let si=0;si<SLOTS.length;si++){
+    if(si===BREAK_IDX){
+      html+=`<tr><td class="wp-time">LUNCH</td>`;
+      for(let di=0;di<6;di++) html+=`<td class="wp-break">BREAK</td>`;
+      html+=`</tr>`;
+      continue;
+    }
+    html+=`<tr><td class="wp-time">${SLOTS[si]}</td>`;
+    for(let di=0;di<6;di++){
+      const cell=ttData[di]?ttData[di][si]:null;
+      const key=`${di}-${si}`;
+      if(cell){
+        html+=`<td><button class="wp-cell${wpSkipped.has(key)?' bunk':''}" onclick="toggleWPCell('${key}',this)">
+          <div class="wp-cell-name">${cell.name}</div><div class="wp-cell-type">${cell.type}</div>
+        </button></td>`;
+      } else {
+        html+=`<td><div class="wp-cell-empty"></div></td>`;
+      }
+    }
+    html+=`</tr>`;
+  }
+  html+=`</tbody>`;
+  table.innerHTML=html;
+}
+function toggleWPCell(key,btn){
+  wpSkipped.has(key)?wpSkipped.delete(key):wpSkipped.add(key);
+  btn.classList.toggle('bunk',wpSkipped.has(key));
+}
+function calcWP(){
+  const target=parseFloat(document.getElementById('wp-target').value)||74;
+  // Count unique class instances (deduplicate double periods)
+  let totalClasses=0,skippedClasses=0;
+  const counted=new Set();
+  for(let di=0;di<6;di++){
+    for(let si=0;si<SLOTS.length;si++){
+      if(si===BREAK_IDX) continue;
+      const cell=ttData[di]?ttData[di][si]:null;
+      if(!cell) continue;
+      const prevCell=si>0&&si-1!==BREAK_IDX&&ttData[di]?ttData[di][si-1]:null;
+      const isDouble=prevCell&&prevCell.name===cell.name;
+      // represent the "real" slot as the first slot of a double
+      const canonSi=isDouble?si-1:si;
+      const ckey=`${di}-${canonSi}`;
+      if(!counted.has(ckey)){
+        counted.add(ckey);
+        totalClasses++;
+        const k=`${di}-${si}`;
+        const pk=`${di}-${si-1}`;
+        if(wpSkipped.has(k)||(isDouble&&wpSkipped.has(pk))) skippedClasses++;
+      }
+    }
+  }
+  // Estimate new overall%: mock with 87 total classes done so far
+  const totalDone=87;
+  const presentDone=Math.round(totalDone*0.7202);
+  const newPresent=presentDone+(totalClasses-skippedClasses);
+  const newTotal=totalDone+totalClasses;
+  const newPct=(newPresent/newTotal)*100;
+  const canSkip=Math.max(0,totalClasses-Math.ceil((target/100*newTotal)-presentDone));
+
+  document.getElementById('wp-total-cls').textContent=totalClasses;
+  document.getElementById('wp-must-cls').textContent=Math.max(0,totalClasses-canSkip);
+  document.getElementById('wp-can-skip').textContent=Math.max(0,canSkip);
+  const afterEl=document.getElementById('wp-after-pct');
+  afterEl.textContent=newPct.toFixed(2)+'%';
+  afterEl.style.color=pctColor(newPct);
+  const reqOk=newPct>=75;
+  document.getElementById('wp-req-status').textContent=reqOk?'On Track':'Below 75%';
+  document.getElementById('wp-req-status').style.color=reqOk?'var(--green)':'var(--red)';
+  const tgtOk=newPct>=target;
+  document.getElementById('wp-target-status').textContent=tgtOk?'On Track':'Below '+target+'%';
+  document.getElementById('wp-target-status').style.color=tgtOk?'var(--green)':'var(--orange)';
+  document.getElementById('wp-result').classList.remove('hidden');
+  setTimeout(()=>{
+    document.getElementById('wp-result').scrollIntoView({behavior:'smooth',block:'start'});
+  },100);
+}
+</script>
+</body>
+</html>
