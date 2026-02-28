@@ -468,7 +468,7 @@ body{font-family:'DM Sans',sans-serif;background:#1a1a2e;display:flex;align-item
       <button class="link-btn">Trouble logging in?</button>
       <button class="link-btn">Forgot Password?</button>
     </div>
-    <button class="btn-primary" onclick="goTo('screen-home')">Login</button>
+    <button class="btn-primary" onclick="loginUser()">Login</button>
     <div class="register-row">First time here?<a onclick="startReg()">Register here</a></div>
   </div>
 </div>
@@ -488,31 +488,63 @@ body{font-family:'DM Sans',sans-serif;background:#1a1a2e;display:flex;align-item
   <div class="step-lbl" id="step-lbl">Step 1 of 5 — Personal Info</div>
 
   <!-- Step 1 -->
-  <div class="reg-body" id="rs1">
-    <div class="form-group"><div class="form-label">Full Name <span class="req">*</span></div><input type="text" class="form-input" placeholder="E.G. ALAKUNTA AKHIL" oninput="this.value=this.value.toUpperCase()"></div>
-    <div class="form-group"><div class="form-label">Roll Number <span class="req">*</span></div><input type="text" class="form-input" placeholder="E.G. 24BFA32003" oninput="this.value=this.value.toUpperCase()"></div>
-    <div class="form-group">
-      <div class="form-label">Password <span class="req">*</span></div>
-      <div class="pass-wrap"><input type="password" class="form-input" id="rpass" placeholder="Create a password"><button class="eye-btn" onclick="togglePass('rpass')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button></div>
-    </div>
-    <button class="btn-primary" onclick="goStep(2)">Next</button>
+<div class="reg-body" id="rs1">
+  <div class="form-group">
+    <div class="form-label">Full Name <span class="req">*</span></div>
+    <input type="text" id="inp-name" class="form-input" placeholder="E.G. ALAKUNTA AKHIL" oninput="this.value=this.value.toUpperCase()">
   </div>
+  <div class="form-group">
+    <div class="form-label">Roll Number <span class="req">*</span></div>
+    <input type="text" id="inp-roll" class="form-input" placeholder="E.G. 24BFA32003" oninput="this.value=this.value.toUpperCase()">
+  </div>
+  <div class="form-group">
+    <div class="form-label">Password <span class="req">*</span></div>
+    <div class="pass-wrap">
+      <input type="password" class="form-input" id="rpass" placeholder="Create a password">
+      <button class="eye-btn" onclick="togglePass('rpass')">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+      </button>
+    </div>
+  </div>
+  <button class="btn-primary" onclick="registerUser()">Next</button>
+</div>
 
   <!-- Step 2 -->
-  <div class="reg-body hidden" id="rs2">
-    <div class="form-group"><div class="form-label">College Name <span class="req">*</span></div><input type="text" class="form-input" placeholder="E.G. SVCE TIRUPATI" oninput="this.value=this.value.toUpperCase()"></div>
-    <div class="form-group"><div class="form-label">Degree</div><input type="text" class="form-input" placeholder="E.G. B.TECH" oninput="this.value=this.value.toUpperCase()"></div>
-    <div class="form-group"><div class="form-label">Branch / Program <span class="req">*</span></div><input type="text" class="form-input" placeholder="E.G. CSE(CSD)" oninput="this.value=this.value.toUpperCase()"></div>
-    <div class="input-row">
-      <div class="form-group"><div class="form-label">Batch</div><input type="text" class="form-input" placeholder="2024-25" oninput="this.value=this.value.toUpperCase()"></div>
-      <div class="form-group"><div class="form-label">Semester</div><input type="number" class="form-input" placeholder="4"></div>
+<div class="reg-body hidden" id="rs2">
+    <div class="form-group">
+        <div class="form-label">College Name <span class="req">*</span></div><input type="text" id="inp-college"
+            class="form-input" placeholder="E.G. SVCE TIRUPATI" oninput="this.value=this.value.toUpperCase()">
+    </div>
+    <div class="form-group">
+        <div class="form-label">Degree</div><input type="text" id="inp-degree" class="form-input"
+            placeholder="E.G. B.TECH" oninput="this.value=this.value.toUpperCase()">
+    </div>
+    <div class="form-group">
+        <div class="form-label">Branch / Program <span class="req">*</span></div><input type="text" id="inp-branch"
+            class="form-input" placeholder="E.G. CSE(CSD)" oninput="this.value=this.value.toUpperCase()">
     </div>
     <div class="input-row">
-      <div class="form-group"><div class="form-label">Section</div><input type="text" class="form-input" placeholder="A" oninput="this.value=this.value.toUpperCase()"></div>
-      <div class="form-group"><div class="form-label">Threshold %</div><input type="number" class="form-input" value="75" min="60" max="100"></div>
+        <div class="form-group">
+            <div class="form-label">Batch</div><input type="text" id="inp-batch" class="form-input"
+                placeholder="2024-25" oninput="this.value=this.value.toUpperCase()">
+        </div>
+        <div class="form-group">
+            <div class="form-label">Semester</div><input type="number" id="inp-semester" class="form-input"
+                placeholder="4">
+        </div>
     </div>
-    <button class="btn-primary" onclick="goStep(3)">Next</button>
-  </div>
+    <div class="input-row">
+        <div class="form-group">
+            <div class="form-label">Section</div><input type="text" id="inp-section" class="form-input" placeholder="A"
+                oninput="this.value=this.value.toUpperCase()">
+        </div>
+        <div class="form-group">
+            <div class="form-label">Threshold %</div><input type="number" id="inp-threshold" class="form-input"
+                value="75" min="60" max="100">
+        </div>
+    </div>
+    <button class="btn-primary" onclick="saveAcademicDetails()">Next</button>
+</div>
 
   <!-- Step 3: Calendar + holidays -->
   <div class="reg-body hidden" id="rs3">
@@ -550,7 +582,7 @@ body{font-family:'DM Sans',sans-serif;background:#1a1a2e;display:flex;align-item
     <div class="tt-scroll">
       <table class="tt-table" id="reg-tt"></table>
     </div>
-    <div style="margin-top:14px"><button class="btn-primary" onclick="goStep(5)">Next</button></div>
+    </div>
   </div>
 
   <!-- Step 5: Current Attendance % -->
@@ -920,6 +952,318 @@ const scheduleData={
 };
 
 // ════ STATE ════
+// ════ SUPABASE AUTH ════
+let currentUser = null;
+async function registerUser() {
+  const name = document.getElementById('inp-name').value.trim();
+  const roll = document.getElementById('inp-roll').value.trim();
+  const password = document.getElementById('rpass').value.trim();
+
+  if (!name || !roll || !password) {
+    showToast('Please fill all fields');
+    return;
+  }
+
+  showToast('Creating account...');
+
+  try {
+    // Check if roll number already exists
+    const { data: existing } = await db
+      .from('users')
+      .select('id')
+      .eq('roll_number', roll)
+      .single();
+
+    if (existing) {
+      showToast('Roll number already registered!');
+      return;
+    }
+
+    // Save user to database
+    const { data: newUser, error } = await db
+      .from('users')
+      .insert({
+        name: name,
+        roll_number: roll,
+        password_hash: btoa(password),
+      })
+      .select()
+      .single();
+
+    if (error) {
+      showToast('Error creating account. Try again.');
+      console.error(error);
+      return;
+    }
+
+    currentUser = newUser;
+    localStorage.setItem('attendx_user_id', newUser.id);
+    showToast('Account created!');
+    goStep(2);
+
+  } catch (err) {
+    showToast('Something went wrong. Try again.');
+    console.error(err);
+  }
+}
+
+async function saveAcademicDetails() {
+  if (!currentUser) return;
+
+  const college = document.getElementById('inp-college').value.trim();
+  const degree = document.getElementById('inp-degree').value.trim();
+  const branch = document.getElementById('inp-branch').value.trim();
+  const batch = document.getElementById('inp-batch').value.trim();
+  const semester = document.getElementById('inp-semester').value.trim();
+  const section = document.getElementById('inp-section').value.trim();
+  const threshold = document.getElementById('inp-threshold').value.trim();
+
+  if (!college || !branch) {
+    showToast('Please fill College and Branch');
+    return;
+  }
+
+  showToast('Saving details...');
+
+  const { error } = await db
+    .from('users')
+    .update({
+      college: college,
+      degree: degree,
+      branch: branch,
+      batch: batch,
+      semester: parseInt(semester),
+      section: section,
+      threshold_pct: parseFloat(threshold) || 75,
+    })
+    .eq('id', currentUser.id);
+
+  if (error) {
+    showToast('Error saving details. Try again.');
+    console.error(error);
+    return;
+  }
+
+  showToast('Details saved!');
+  goStep(3);
+}
+
+async function saveTimetableToDB() {
+  if (!currentUser) { goStep(5); return; }
+
+  showToast('Saving timetable...');
+
+  // Delete old slots first
+  await db.from('timetable_slots').delete().eq('user_id', currentUser.id);
+
+  const slots = [];
+  for (let di = 0; di < 6; di++) {
+    for (let si = 0; si < 7; si++) {
+      if (si === 3) continue; // skip lunch
+      const cell = ttData[di] ? ttData[di][si] : null;
+      if (cell) {
+        slots.push({
+          user_id: currentUser.id,
+          day_index: di,
+          slot_index: si,
+          subject_name: cell.name,
+          subject_code: cell.code,
+          type: cell.type,
+        });
+      }
+    }
+  }
+
+  if (slots.length > 0) {
+    const { error } = await db.from('timetable_slots').insert(slots);
+    if (error) {
+      showToast('Error saving timetable');
+      console.error(error);
+      return;
+    }
+  }
+
+  showToast('Timetable saved!');
+  goStep(5);
+}
+
+async function saveSubjectPercentages() {
+  if (!currentUser) { goTo('screen-home'); return; }
+
+  showToast('Saving attendance data...');
+
+  // Delete old subjects first
+  await db.from('subjects').delete().eq('user_id', currentUser.id);
+
+  const subjectsToSave = SUBJECTS.map((s, i) => {
+    const val = parseFloat(document.getElementById('pct-' + i)?.value) || 0;
+    return {
+      user_id: currentUser.id,
+      name: s.name,
+      code: s.code,
+      teacher: s.teacher,
+      current_pct: val,
+      classes_per_week: s.cpw,
+    };
+  });
+
+  const { error } = await db.from('subjects').insert(subjectsToSave);
+
+  if (error) {
+    showToast('Error saving subjects');
+    console.error(error);
+    return;
+  }
+
+  showToast('Setup complete!');
+  goTo('screen-home');
+}
+
+async function loginUser() {
+  const roll = document.querySelector('#screen-login input[placeholder="E.G. 24BFA32003"]').value.trim();
+  const password = document.getElementById('lpass').value.trim();
+
+  if (!roll || !password) {
+    showToast('Enter roll number and password');
+    return;
+  }
+
+  showToast('Logging in...');
+
+  try {
+    const { data: user, error } = await db
+      .from('users')
+      .select('*')
+      .eq('roll_number', roll)
+      .eq('password_hash', btoa(password))
+      .single();
+
+    if (error || !user) {
+      showToast('Invalid roll number or password');
+      return;
+    }
+
+    currentUser = user;
+    localStorage.setItem('attendx_user_id', user.id);
+    await loadUserData();
+    goTo('screen-home');
+
+  } catch (err) {
+    showToast('Something went wrong');
+    console.error(err);
+  }
+}
+
+async function loadUserData() {
+  if (!currentUser) return;
+
+  // Load subjects
+  const { data: subs } = await db
+    .from('subjects')
+    .select('*')
+    .eq('user_id', currentUser.id);
+
+  if (subs && subs.length > 0) {
+    subs.forEach((s, i) => {
+      if (SUBJECTS[i]) {
+        SUBJECTS[i].name = s.name;
+        SUBJECTS[i].code = s.code;
+        SUBJECTS[i].teacher = s.teacher || '';
+        SUBJECTS[i].pct = s.current_pct;
+        SUBJECTS[i].cpw = s.classes_per_week;
+      }
+    });
+  }
+
+  // Load timetable
+  const { data: slots } = await db
+    .from('timetable_slots')
+    .select('*')
+    .eq('user_id', currentUser.id);
+
+  if (slots && slots.length > 0) {
+    // Clear existing
+    for (let di = 0; di < 6; di++) ttData[di] = Array(7).fill(null);
+    slots.forEach(slot => {
+      if (!ttData[slot.day_index]) ttData[slot.day_index] = Array(7).fill(null);
+      ttData[slot.day_index][slot.slot_index] = {
+        name: slot.subject_name,
+        code: slot.subject_code,
+        type: slot.type,
+      };
+    });
+  }
+
+  // Load holidays
+  const { data: hols } = await db
+    .from('holidays')
+    .select('*')
+    .eq('user_id', currentUser.id);
+
+  if (hols) {
+    holidayKeys.clear();
+    hols.forEach(h => holidayKeys.add(h.date));
+  }
+}
+
+async function saveAttendanceRecord(subjectName, date, status) {
+  if (!currentUser) return;
+
+  // Get subject id
+  const { data: sub } = await db
+    .from('subjects')
+    .select('id')
+    .eq('user_id', currentUser.id)
+    .eq('name', subjectName)
+    .single();
+
+  if (!sub) return;
+
+  // Upsert attendance
+  await db.from('attendance_records').upsert({
+    user_id: currentUser.id,
+    subject_id: sub.id,
+    date: date,
+    status: status,
+  }, { onConflict: 'user_id,subject_id,date' });
+}
+
+async function saveHolidayToDB(dateStr) {
+  if (!currentUser) return;
+  await db.from('holidays').insert({
+    user_id: currentUser.id,
+    date: dateStr,
+  });
+}
+
+async function removeHolidayFromDB(dateStr) {
+  if (!currentUser) return;
+  await db.from('holidays')
+    .delete()
+    .eq('user_id', currentUser.id)
+    .eq('date', dateStr);
+}
+
+// Auto login if user was previously logged in
+async function checkExistingSession() {
+  const savedId = localStorage.getItem('attendx_user_id');
+  if (!savedId) return;
+
+  const { data: user } = await db
+    .from('users')
+    .select('*')
+    .eq('id', savedId)
+    .single();
+
+  if (user) {
+    currentUser = user;
+    await loadUserData();
+    goTo('screen-home');
+  }
+}
+
+// Run on page load
+checkExistingSession();
 let navStack=['screen-login'];
 let holidayKeys=new Set(); // "YYYY-M-D"
 let holCalCur=new Date(2026,1,1);
@@ -1006,9 +1350,8 @@ function finishReg(){
     if(!isNaN(v)&&v>100)hasErr=true;
   });
   if(hasErr){showToast('Fix errors before continuing');return;}
-  goTo('screen-home');
+  saveSubjectPercentages();
 }
-
 // ════ HOLIDAY CALENDAR (register) ════
 function renderHolCal(){
   const y=holCalCur.getFullYear(),m=holCalCur.getMonth();
