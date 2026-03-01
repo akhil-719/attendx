@@ -863,12 +863,21 @@ body{font-family:'DM Sans',sans-serif;background:#1a1a2e;display:flex;align-item
 
 </div><!-- /phone -->
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<!-- localStorage database system -->
 <script>
-  const SUPABASE_URL = 'https://niochwpydmkgruxnexku.supabase.co';
-  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5pb2Nod3B5ZG1rZ3J1eG5leGt1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIyOTEzMTEsImV4cCI6MjA4Nzg2NzMxMX0.ZSnG3IbEDtrliKua43I8QYlwqik3BU7ampQwW8QkxLc';
-  const { createClient } = supabase;
-  const db = createClient(SUPABASE_URL, SUPABASE_KEY);
+// ════ LOCAL DATABASE (localStorage) ════
+const DB = {
+  save(key, value) {
+    localStorage.setItem('attendx_' + key, JSON.stringify(value));
+  },
+  load(key) {
+    const v = localStorage.getItem('attendx_' + key);
+    return v ? JSON.parse(v) : null;
+  },
+  delete(key) {
+    localStorage.removeItem('attendx_' + key);
+  }
+};
 </script>
 <script>
 // ════ DATA ════
@@ -995,129 +1004,209 @@ function validateDates(){
   const e=document.getElementById('sem-end').value;
   if(s&&e) document.getElementById('end-err').classList.toggle('hidden',new Date(e)>new Date(s));
 }
-function finishReg(){
-  let hasErr=false;
-  SUBJECTS.forEach((_,i)=>{
-    const v=parseFloat(document.getElementById('pct-'+i)?.value);
-    if(!isNaN(v)&&v>100)hasErr=true;
+// ════ LOCAL STORAGE FUNCTIONS ════
+let currentUser = null;
+
+function generateId() {
+  return Math.random().toString(36).substring(2) + Date.now().toString(36);
+}
+
+function finishReg() {
+  let hasErr = false;
+  SUBJECTS.forEach((_, i) => {
+    const v = parseFloat(document.getElementById('pct-' + i)?.value);
+    if (!isNaN(v) && v > 100) hasErr = true;
   });
-  if(hasErr){showToast('Fix errors before continuing');return;}
+  if (hasErr) { showToast('Fix errors before continuing'); return; }
   saveSubjectPercentages();
 }
 
-// ════ SUPABASE FUNCTIONS ════
-let currentUser=null;
+function registerUser() {
+  const name = document.getElementById('inp-name').value.trim();
+  const roll = document.getElementById('inp-roll').value.trim();
+  const password = document.getElementById('rpass').value.trim();
 
-async function registerUser(){
-  const name=document.getElementById('inp-name').value.trim();
-  const roll=document.getElementById('inp-roll').value.trim();
-  const password=document.getElementById('rpass').value.trim();
-  if(!name||!roll||!password){showToast('Please fill all fields');return;}
-  showToast('Creating account...');
-  try{
-    const{data:existing}=await db.from('users').select('id').eq('roll_number',roll).maybeSingle();
-    if(existing){showToast('Roll number already registered!');return;}
-    const{data:newUser,error}=await db.from('users').insert({name,roll_number:roll,password_hash:btoa(password)}).select().single();
-    if(error){showToast('Error: '+error.message);console.error(error);return;}
-    currentUser=newUser;
-    localStorage.setItem('attendx_user_id',newUser.id);
-    showToast('Account created!');
-    goStep(2);
-  }catch(err){showToast('Something went wrong');console.error(err);}
+  if (!name || !roll || !password) { showToast('Please fill all fields'); return; }
+
+  // Check if roll number already exists
+  const allUsers = DB.load('all_users') || [];
+  const existing = allUsers.find(u => u.roll_number === roll);
+  if (existing) { showToast('Roll number already registered!'); return; }
+
+  // Create new user
+  const newUser = {
+    id: generateId(),
+    name: name,
+    roll_number: roll,
+    password_hash: btoa(password),
+    college: '', degree: '', branch: '',
+    batch: '', semester: '', section: '',
+    threshold_pct: 75,
+    created_at: new Date().toISOString()
+  };
+
+  allUsers.push(newUser);
+  DB.save('all_users', allUsers);
+  DB.save('current_user_id', newUser.id);
+  currentUser = newUser;
+
+  showToast('Account created!');
+  goStep(2);
 }
 
-async function saveAcademicDetails(){
-  if(!currentUser){showToast('Session lost, please register again');return;}
-  const college=document.getElementById('inp-college').value.trim();
-  const degree=document.getElementById('inp-degree').value.trim();
-  const branch=document.getElementById('inp-branch').value.trim();
-  const batch=document.getElementById('inp-batch').value.trim();
-  const semester=document.getElementById('inp-semester').value.trim();
-  const section=document.getElementById('inp-section').value.trim();
-  const threshold=document.getElementById('inp-threshold').value.trim();
-  if(!college||!branch){showToast('Please fill College and Branch');return;}
-  showToast('Saving details...');
-  const{error}=await db.from('users').update({college,degree,branch,batch,semester:parseInt(semester),section,threshold_pct:parseFloat(threshold)||75}).eq('id',currentUser.id);
-  if(error){showToast('Error: '+error.message);return;}
+function saveAcademicDetails() {
+  if (!currentUser) { showToast('Session lost. Please register again.'); return; }
+
+  const college = document.getElementById('inp-college').value.trim();
+  const degree = document.getElementById('inp-degree').value.trim();
+  const branch = document.getElementById('inp-branch').value.trim();
+  const batch = document.getElementById('inp-batch').value.trim();
+  const semester = document.getElementById('inp-semester').value.trim();
+  const section = document.getElementById('inp-section').value.trim();
+  const threshold = document.getElementById('inp-threshold').value.trim();
+
+  if (!college || !branch) { showToast('Please fill College and Branch'); return; }
+
+  // Update user details
+  const allUsers = DB.load('all_users') || [];
+  const idx = allUsers.findIndex(u => u.id === currentUser.id);
+  if (idx > -1) {
+    allUsers[idx] = {
+      ...allUsers[idx],
+      college, degree, branch, batch,
+      semester: parseInt(semester) || 4,
+      section,
+      threshold_pct: parseFloat(threshold) || 75
+    };
+    DB.save('all_users', allUsers);
+    currentUser = allUsers[idx];
+  }
+
   showToast('Details saved!');
   goStep(3);
 }
 
-async function saveTimetableToDB(){
-  if(!currentUser){goStep(5);return;}
-  showToast('Saving timetable...');
-  await db.from('timetable_slots').delete().eq('user_id',currentUser.id);
-  const slots=[];
-  for(let di=0;di<6;di++){
-    for(let si=0;si<7;si++){
-      if(si===3)continue;
-      const cell=ttData[di]?ttData[di][si]:null;
-      if(cell)slots.push({user_id:currentUser.id,day_index:di,slot_index:si,subject_name:cell.name,subject_code:cell.code,type:cell.type});
+function saveTimetableToDB() {
+  if (!currentUser) { goStep(5); return; }
+
+  const slots = [];
+  for (let di = 0; di < 6; di++) {
+    for (let si = 0; si < 7; si++) {
+      if (si === 3) continue;
+      const cell = ttData[di] ? ttData[di][si] : null;
+      if (cell) slots.push({ day_index: di, slot_index: si, subject_name: cell.name, subject_code: cell.code, type: cell.type });
     }
   }
-  if(slots.length>0){
-    const{error}=await db.from('timetable_slots').insert(slots);
-    if(error){showToast('Error saving timetable');console.error(error);return;}
-  }
+
+  DB.save('timetable_' + currentUser.id, slots);
   showToast('Timetable saved!');
   goStep(5);
 }
 
-async function saveSubjectPercentages(){
-  if(!currentUser){goTo('screen-home');return;}
-  showToast('Saving attendance data...');
-  await db.from('subjects').delete().eq('user_id',currentUser.id);
-  const subsToSave=SUBJECTS.map((s,i)=>{
-    const val=parseFloat(document.getElementById('pct-'+i)?.value)||0;
-    return{user_id:currentUser.id,name:s.name,code:s.code,teacher:s.teacher,current_pct:val,classes_per_week:s.cpw};
+function saveSubjectPercentages() {
+  if (!currentUser) { goTo('screen-home'); return; }
+
+  const subsToSave = SUBJECTS.map((s, i) => {
+    const val = parseFloat(document.getElementById('pct-' + i)?.value) || 0;
+    return { id: generateId(), name: s.name, code: s.code, teacher: s.teacher, current_pct: val, classes_per_week: s.cpw };
   });
-  const{error}=await db.from('subjects').insert(subsToSave);
-  if(error){showToast('Error saving subjects');console.error(error);return;}
+
+  DB.save('subjects_' + currentUser.id, subsToSave);
   showToast('Setup complete!');
+  loadUserData();
   goTo('screen-home');
 }
 
-async function loginUser(){
-  const roll=document.querySelector('#screen-login input[placeholder="E.G. 24BFA32003"]').value.trim();
-  const password=document.getElementById('lpass').value.trim();
-  if(!roll||!password){showToast('Enter roll number and password');return;}
-  showToast('Logging in...');
-  try{
-    const{data:user,error}=await db.from('users').select('*').eq('roll_number',roll).eq('password_hash',btoa(password)).maybeSingle();
-    if(error||!user){showToast('Invalid roll number or password');return;}
-    currentUser=user;
-    localStorage.setItem('attendx_user_id',user.id);
-    await loadUserData();
+function loginUser() {
+  const roll = document.querySelector('#screen-login input[placeholder="E.G. 24BFA32003"]').value.trim();
+  const password = document.getElementById('lpass').value.trim();
+
+  if (!roll || !password) { showToast('Enter roll number and password'); return; }
+
+  const allUsers = DB.load('all_users') || [];
+  const user = allUsers.find(u => u.roll_number === roll && u.password_hash === btoa(password));
+
+  if (!user) { showToast('Invalid roll number or password'); return; }
+
+  currentUser = user;
+  DB.save('current_user_id', user.id);
+  loadUserData();
+  showToast('Welcome back, ' + user.name.split(' ')[0] + '!');
+  goTo('screen-home');
+}
+
+function loadUserData() {
+  if (!currentUser) return;
+
+  // Load subjects
+  const subs = DB.load('subjects_' + currentUser.id);
+  if (subs && subs.length > 0) {
+    subs.forEach((s, i) => {
+      if (SUBJECTS[i]) {
+        SUBJECTS[i].name = s.name;
+        SUBJECTS[i].code = s.code;
+        SUBJECTS[i].teacher = s.teacher || '';
+        SUBJECTS[i].pct = s.current_pct;
+        SUBJECTS[i].cpw = s.classes_per_week;
+      }
+    });
+  }
+
+  // Load timetable
+  const slots = DB.load('timetable_' + currentUser.id);
+  if (slots && slots.length > 0) {
+    for (let di = 0; di < 6; di++) ttData[di] = Array(7).fill(null);
+    slots.forEach(slot => {
+      if (!ttData[slot.day_index]) ttData[slot.day_index] = Array(7).fill(null);
+      ttData[slot.day_index][slot.slot_index] = { name: slot.subject_name, code: slot.subject_code, type: slot.type };
+    });
+  }
+
+  // Load holidays
+  const hols = DB.load('holidays_' + currentUser.id);
+  if (hols) { holidayKeys.clear(); hols.forEach(h => holidayKeys.add(h)); }
+
+  // Update home screen name
+  const nameEl = document.querySelector('.greeting-name');
+  if (nameEl && currentUser.name) {
+    const firstName = currentUser.name.split(' ')[0];
+    nameEl.textContent = 'Hi ' + firstName + ',';
+  }
+}
+
+function saveHolidayToDB(dateStr) {
+  if (!currentUser) return;
+  const hols = DB.load('holidays_' + currentUser.id) || [];
+  if (!hols.includes(dateStr)) hols.push(dateStr);
+  DB.save('holidays_' + currentUser.id, hols);
+}
+
+function removeHolidayFromDB(dateStr) {
+  if (!currentUser) return;
+  const hols = (DB.load('holidays_' + currentUser.id) || []).filter(h => h !== dateStr);
+  DB.save('holidays_' + currentUser.id, hols);
+}
+
+function saveAttendanceRecord(subjectName, date, status) {
+  if (!currentUser) return;
+  const records = DB.load('attendance_' + currentUser.id) || [];
+  const idx = records.findIndex(r => r.subject === subjectName && r.date === date);
+  if (idx > -1) records[idx].status = status;
+  else records.push({ subject: subjectName, date, status });
+  DB.save('attendance_' + currentUser.id, records);
+}
+
+// Auto login on page load
+(function () {
+  const savedId = DB.load('current_user_id');
+  if (!savedId) return;
+  const allUsers = DB.load('all_users') || [];
+  const user = allUsers.find(u => u.id === savedId);
+  if (user) {
+    currentUser = user;
+    loadUserData();
     goTo('screen-home');
-  }catch(err){showToast('Something went wrong');console.error(err);}
-}
-
-async function loadUserData(){
-  if(!currentUser)return;
-  const{data:subs}=await db.from('subjects').select('*').eq('user_id',currentUser.id);
-  if(subs&&subs.length>0){
-    subs.forEach((s,i)=>{
-      if(SUBJECTS[i]){SUBJECTS[i].name=s.name;SUBJECTS[i].code=s.code;SUBJECTS[i].teacher=s.teacher||'';SUBJECTS[i].pct=s.current_pct;SUBJECTS[i].cpw=s.classes_per_week;}
-    });
   }
-  const{data:slots}=await db.from('timetable_slots').select('*').eq('user_id',currentUser.id);
-  if(slots&&slots.length>0){
-    for(let di=0;di<6;di++)ttData[di]=Array(7).fill(null);
-    slots.forEach(slot=>{
-      if(!ttData[slot.day_index])ttData[slot.day_index]=Array(7).fill(null);
-      ttData[slot.day_index][slot.slot_index]={name:slot.subject_name,code:slot.subject_code,type:slot.type};
-    });
-  }
-  const{data:hols}=await db.from('holidays').select('*').eq('user_id',currentUser.id);
-  if(hols){holidayKeys.clear();hols.forEach(h=>holidayKeys.add(h.date));}
-}
-
-// Auto login check on page load
-(async function(){
-  const savedId=localStorage.getItem('attendx_user_id');
-  if(!savedId)return;
-  const{data:user}=await db.from('users').select('*').eq('id',savedId).maybeSingle();
-  if(user){currentUser=user;await loadUserData();goTo('screen-home');}
 })();
 
 // ════ HOLIDAY CALENDAR (register) ════
