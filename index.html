@@ -998,6 +998,8 @@ function goStep(n){
   }
   const L=['','Step 1 of 5 — Personal Info','Step 2 of 5 — Academic Details','Step 3 of 5 — Academic Calendar','Step 4 of 5 — Class Schedule','Step 5 of 5 — Current Attendance'];
   document.getElementById('step-lbl').textContent=L[n];
+  // Rebuild subject list from timetable when reaching step 5
+  if(n===5) buildSubPctList();
 }
 function validateDates(){
   const s=document.getElementById('sem-start').value;
@@ -1106,12 +1108,41 @@ function saveTimetableToDB() {
 function saveSubjectPercentages() {
   if (!currentUser) { goTo('screen-home'); return; }
 
-  const subsToSave = SUBJECTS.map((s, i) => {
+  const subs = window._dynamicSubjects || getSubjectsFromTimetable();
+
+  if(subs.length === 0){
+    showToast('No subjects found in timetable!');
+    return;
+  }
+
+  const subsToSave = subs.map((s, i) => {
     const val = parseFloat(document.getElementById('pct-' + i)?.value) || 0;
-    return { id: generateId(), name: s.name, code: s.code, teacher: s.teacher, current_pct: val, classes_per_week: s.cpw };
+    return {
+      id: generateId(),
+      name: s.name,
+      code: s.code || '',
+      teacher: '',
+      current_pct: val,
+      classes_per_week: s.cpw
+    };
   });
 
   DB.save('subjects_' + currentUser.id, subsToSave);
+
+  // Also update global SUBJECTS array
+  subsToSave.forEach((s, i) => {
+    if(SUBJECTS[i]){
+      SUBJECTS[i].name = s.name;
+      SUBJECTS[i].code = s.code;
+      SUBJECTS[i].pct = s.current_pct;
+      SUBJECTS[i].cpw = s.classes_per_week;
+    } else {
+      SUBJECTS.push({ name: s.name, code: s.code, teacher: '', pct: s.current_pct, cpw: s.classes_per_week, color: '#2e3192' });
+    }
+  });
+  // Remove extra subjects if fewer this time
+  SUBJECTS.splice(subsToSave.length);
+
   showToast('Setup complete!');
   loadUserData();
   goTo('screen-home');
@@ -1300,11 +1331,61 @@ function clearTTSlot(){
 }
 
 // ════ SUBJECT % ENTRY ════
+function getSubjectsFromTimetable(){
+  // Extract unique subjects from timetable
+  const seen = new Set();
+  const subs = [];
+  for(let di=0;di<6;di++){
+    for(let si=0;si<7;si++){
+      if(si===3) continue; // skip lunch
+      const cell = ttData[di]?ttData[di][si]:null;
+      if(cell && cell.name && !seen.has(cell.name)){
+        seen.add(cell.name);
+        // count classes per week
+        let cpw = 0;
+        const counted = new Set();
+        for(let d=0;d<6;d++){
+          for(let s=0;s<7;s++){
+            if(s===3) continue;
+            const c = ttData[d]?ttData[d][s]:null;
+            if(c && c.name === cell.name){
+              // handle double periods
+              const prev = s>0&&s-1!==3?ttData[d][s-1]:null;
+              const isDouble = prev && prev.name === cell.name;
+              const key = `${d}-${isDouble?s-1:s}`;
+              if(!counted.has(key)){ counted.add(key); cpw++; }
+            }
+          }
+        }
+        subs.push({ name: cell.name, code: cell.code, type: cell.type, cpw });
+      }
+    }
+  }
+  return subs;
+}
+
 function buildSubPctList(){
-  document.getElementById('sub-pct-list').innerHTML=SUBJECTS.map((s,i)=>`
+  const subs = getSubjectsFromTimetable();
+
+  if(subs.length === 0){
+    document.getElementById('sub-pct-list').innerHTML=`
+      <div style="background:var(--orange-bg);border-radius:12px;padding:14px;margin-bottom:14px;border-left:3px solid var(--orange);">
+        <div style="font-size:13px;font-weight:700;color:#e65100;margin-bottom:4px;">No subjects found</div>
+        <div style="font-size:12px;color:var(--muted);">Go back to Step 4 and add subjects to your timetable first.</div>
+      </div>`;
+    return;
+  }
+
+  // Store dynamic subjects for later saving
+  window._dynamicSubjects = subs;
+
+  document.getElementById('sub-pct-list').innerHTML = subs.map((s,i)=>`
     <div class="sub-pct-card">
       <div class="sub-pct-name">${s.name}</div>
-      <div class="sub-pct-code">${s.code}</div>
+      <div style="display:flex;gap:8px;margin-bottom:10px;align-items:center;">
+        <div class="sub-pct-code">${s.code||'—'}</div>
+        <div style="font-size:10px;color:var(--muted);background:var(--bg);padding:2px 8px;border-radius:20px;">${s.cpw} class${s.cpw!==1?'es':''}/week</div>
+      </div>
       <div class="sub-pct-row">
         <input type="number" class="sub-pct-in" id="pct-${i}" placeholder="e.g. 74.66" min="0" max="100" step="0.01" oninput="calcOverallAvg()">
         <div class="sub-pct-badge" id="pct-badge-${i}">—</div>
@@ -1312,11 +1393,13 @@ function buildSubPctList(){
     </div>`).join('');
 }
 function calcOverallAvg(){
+  const subs = window._dynamicSubjects || getSubjectsFromTimetable();
   let sum=0,cnt=0;
-  SUBJECTS.forEach((_,i)=>{
+  subs.forEach((_,i)=>{
     const v=parseFloat(document.getElementById('pct-'+i)?.value);
     const inp=document.getElementById('pct-'+i);
     const bdg=document.getElementById('pct-badge-'+i);
+    if(!inp||!bdg) return;
     if(!isNaN(v)&&v>=0&&v<=100){
       inp.classList.remove('err');
       bdg.textContent=v.toFixed(2)+'%';
