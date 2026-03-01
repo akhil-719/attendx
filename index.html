@@ -385,10 +385,6 @@ body{font-family:'DM Sans',sans-serif;background:#1a1a2e;display:flex;align-item
       <input type="text" class="form-input" id="tt-slot-name" placeholder="E.G. DATABASE MANAGEMENT" oninput="this.value=this.value.toUpperCase()">
     </div>
     <div class="form-group">
-      <div class="form-label">Subject Code</div>
-      <input type="text" class="form-input" id="tt-slot-code" placeholder="E.G. CS302" oninput="this.value=this.value.toUpperCase()">
-    </div>
-    <div class="form-group">
       <div class="form-label">Type</div>
       <select class="form-input" id="tt-slot-type">
         <option value="Theory">Theory Class</option>
@@ -542,16 +538,16 @@ body{font-family:'DM Sans',sans-serif;background:#1a1a2e;display:flex;align-item
     <div style="margin-top:14px"><button class="btn-primary" onclick="saveTimetableToDB()">Next</button></div>
   </div>
 
-  <!-- Step 5: Current Attendance % -->
+  <!-- Step 5: Current Attendance -->
   <div class="reg-body hidden" id="rs5">
-    <div class="info-box orange"><div class="info-box-title">Current Attendance</div><div class="info-box-text">Enter your attendance percentage for each subject from your college portal (e.g. 74.66).</div></div>
+    <div class="info-box orange"><div class="info-box-title">Current Attendance</div><div class="info-box-text">Enter total classes held and how many you attended for each subject. Percentage is calculated automatically.</div></div>
     <div id="sub-pct-list"></div>
     <div style="background:var(--primary-light);border-radius:12px;padding:14px;margin-bottom:16px;">
       <div style="display:flex;justify-content:space-between;align-items:center;">
         <div style="font-size:13px;font-weight:700;color:var(--primary)">Overall Average</div>
-        <div style="font-size:22px;font-weight:800;" id="overall-avg-val" class="overall-avg-display">— %</div>
+        <div style="font-size:22px;font-weight:800;" id="overall-avg-val">— %</div>
       </div>
-      <div class="err-msg hidden" id="overall-err">Overall average cannot exceed 100%</div>
+      <div class="err-msg hidden" id="overall-err">Please check your entries</div>
     </div>
     <button class="btn-primary" onclick="finishReg()">Complete Setup</button>
   </div>
@@ -570,7 +566,7 @@ body{font-family:'DM Sans',sans-serif;background:#1a1a2e;display:flex;align-item
     <!-- Greeting -->
     <div class="greeting-card">
       <div class="greeting-top">
-        <div class="greeting-name">Hi Alakunta Akhil,</div>
+        <div class="greeting-name" id="greeting-name">Hi there,</div>
         <div class="weather-wrap"><div class="weather-temp">29°C</div><div class="weather-desc">Partly Cloudy</div></div>
       </div>
       <div class="greeting-date" id="home-date">Good Morning, Saturday 28 February</div>
@@ -602,7 +598,7 @@ body{font-family:'DM Sans',sans-serif;background:#1a1a2e;display:flex;align-item
         <div class="att-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2"><rect x="3" y="4" width="18" height="18" rx="3"/><path d="M16 2v4M8 2v4M3 10h18"/><path d="M9 16l2 2 4-4"/></svg></div>
         <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:2px;">Overall Attendance</div>
         <div style="font-size:11px;color:var(--muted);margin-bottom:8px;">Tap to view subject breakdown</div>
-        <div class="att-pct">72.02%</div>
+        <div class="att-pct" id="home-overall-pct">--%</div>
         <div class="att-time">Updated today</div>
       </div>
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4caf50" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
@@ -610,24 +606,7 @@ body{font-family:'DM Sans',sans-serif;background:#1a1a2e;display:flex;align-item
 
     <!-- Today's Classes -->
     <div class="section-label">Today's Classes</div>
-    <div class="class-item" onclick="goTo('screen-subject-detail')">
-      <div class="class-time-col"><div class="class-time">9:15</div><div class="class-dur">1hr</div></div>
-      <div class="class-dot" style="border-color:#26a69a;background:#e0f2f1;"></div>
-      <div class="class-info"><div class="class-name">Universal Human Values</div><div class="class-room">Room 101</div></div>
-      <div class="class-pct-badge" style="background:#fff3e0;color:#e65100;">67.74%</div>
-    </div>
-    <div class="class-item" onclick="goTo('screen-subject-detail')">
-      <div class="class-time-col"><div class="class-time">10:15</div><div class="class-dur">1hr</div></div>
-      <div class="class-dot" style="border-color:#ef5350;background:#ffebee;"></div>
-      <div class="class-info"><div class="class-name">Statistical Methods for DS</div><div class="class-room">Room 304</div></div>
-      <div class="class-pct-badge" style="background:#fff3e0;color:#e65100;">70.97%</div>
-    </div>
-    <div class="class-item" onclick="goTo('screen-subject-detail')">
-      <div class="class-time-col"><div class="class-time">11:15</div><div class="class-dur">1hr</div></div>
-      <div class="class-dot" style="border-color:#42a5f5;background:#e3f2fd;"></div>
-      <div class="class-info"><div class="class-name">Database Management Systems</div><div class="class-room">Room 212</div></div>
-      <div class="class-pct-badge" style="background:#fdecea;color:#c62828;">61.54%</div>
-    </div>
+    <div id="home-today-classes"></div>
     <div style="height:80px"></div>
   </div>
   <div class="bottom-nav">
@@ -653,7 +632,7 @@ body{font-family:'DM Sans',sans-serif;background:#1a1a2e;display:flex;align-item
   <div class="date-strip" id="date-strip"></div>
   <div class="mark-classes" id="mark-classes"></div>
   <div style="padding:0 16px 16px;flex-shrink:0;">
-    <button class="btn-primary" onclick="goBack();showToast('Attendance saved!')">Save Attendance</button>
+    <button class="btn-primary" onclick="saveAttendanceAndUpdate()">Save Attendance</button>
   </div>
 </div>
 
@@ -675,7 +654,12 @@ body{font-family:'DM Sans',sans-serif;background:#1a1a2e;display:flex;align-item
         <button class="sch-hdr-btn" id="hol-toggle-btn" onclick="toggleSelectedDayHoliday()">Mark Holiday</button>
       </div>
     </div>
-    <div class="week-strip" id="week-strip"></div>
+    <!-- Week navigation -->
+    <div style="display:flex;align-items:center;gap:4px;margin-bottom:4px;">
+      <button onclick="changeSchWeek(-1)" style="background:rgba(255,255,255,0.15);border:none;color:#fff;border-radius:8px;width:28px;height:28px;font-size:16px;cursor:pointer;flex-shrink:0;">&#8249;</button>
+      <div class="week-strip" id="week-strip" style="flex:1;"></div>
+      <button onclick="changeSchWeek(1)" style="background:rgba(255,255,255,0.15);border:none;color:#fff;border-radius:8px;width:28px;height:28px;font-size:16px;cursor:pointer;flex-shrink:0;">&#8250;</button>
+    </div>
   </div>
   <div class="sch-body" id="sch-body" style="flex:1;overflow-y:auto;"></div>
 </div>
@@ -746,7 +730,7 @@ body{font-family:'DM Sans',sans-serif;background:#1a1a2e;display:flex;align-item
   </div>
   <div style="flex:1;overflow-y:auto;">
     <div class="bar-chart-card"><div class="bar-chart" id="bar-chart"></div></div>
-    <div class="total-box"><div style="font-size:14px;font-weight:700;color:var(--text);">Total Average</div><div style="font-size:20px;font-weight:800;color:#2e7d32;">72.02%</div></div>
+    <div class="total-box"><div style="font-size:14px;font-weight:700;color:var(--text);">Total Average</div><div style="font-size:20px;font-weight:800;color:#2e7d32;" id="att-total-avg">--%</div></div>
     <div id="att-sub-list"></div>
     <div style="height:80px"></div>
   </div>
@@ -835,7 +819,7 @@ body{font-family:'DM Sans',sans-serif;background:#1a1a2e;display:flex;align-item
         <div class="profile-stat-lbl">Classes Remaining in Semester</div>
       </div>
       <div class="profile-stat">
-        <div class="profile-stat-val" style="color:var(--orange);">72.02%</div>
+        <div class="profile-stat-val" id="profile-overall-pct" style="color:var(--orange);">--%</div>
         <div class="profile-stat-lbl">Current Overall Attendance</div>
       </div>
     </div>
@@ -935,7 +919,8 @@ let currentTTEdit={di:0,si:0};
 let wpSkipped=new Set();
 
 // ════ UTILS ════
-function dateKey(d){return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;}
+function dateKey(d){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
+function fmtDateKey(d){return dateKey(d);}
 function pctColor(p){return p>=75?'var(--green)':p>=65?'var(--orange)':'var(--red)';}
 function togglePass(id){const e=document.getElementById(id);e.type=e.type==='password'?'text':'password';}
 function showToast(msg){
@@ -1105,43 +1090,36 @@ function saveTimetableToDB() {
   goStep(5);
 }
 
-function saveSubjectPercentages() {
-  if (!currentUser) { goTo('screen-home'); return; }
+function saveSubjectPercentages(){
+  if(!currentUser){goTo('screen-home');return;}
+  const subs=window._dynamicSubjects||getSubjectsFromTimetable();
+  if(subs.length===0){showToast('No subjects found in timetable!');return;}
 
-  const subs = window._dynamicSubjects || getSubjectsFromTimetable();
-
-  if(subs.length === 0){
-    showToast('No subjects found in timetable!');
-    return;
-  }
-
-  const subsToSave = subs.map((s, i) => {
-    const val = parseFloat(document.getElementById('pct-' + i)?.value) || 0;
-    return {
-      id: generateId(),
-      name: s.name,
-      code: s.code || '',
-      teacher: '',
-      current_pct: val,
-      classes_per_week: s.cpw
+  const subsToSave=subs.map((s,i)=>{
+    const held=parseInt(document.getElementById('held-'+i)?.value)||0;
+    const att=parseInt(document.getElementById('att-'+i)?.value)||0;
+    const pct=held>0?parseFloat(((att/held)*100).toFixed(2)):0;
+    return{
+      id:generateId(),
+      name:s.name,
+      code:'',
+      teacher:'',
+      classes_held:held,
+      classes_attended:att,
+      current_pct:pct,
+      initial_pct:pct,
+      classes_per_week:s.cpw
     };
   });
 
-  DB.save('subjects_' + currentUser.id, subsToSave);
+  DB.save('subjects_'+currentUser.id,subsToSave);
 
-  // Also update global SUBJECTS array
-  subsToSave.forEach((s, i) => {
-    if(SUBJECTS[i]){
-      SUBJECTS[i].name = s.name;
-      SUBJECTS[i].code = s.code;
-      SUBJECTS[i].pct = s.current_pct;
-      SUBJECTS[i].cpw = s.classes_per_week;
-    } else {
-      SUBJECTS.push({ name: s.name, code: s.code, teacher: '', pct: s.current_pct, cpw: s.classes_per_week, color: '#2e3192' });
-    }
+  // Rebuild SUBJECTS array
+  SUBJECTS.splice(0,SUBJECTS.length);
+  const colors=['#ef5350','#66bb6a','#42a5f5','#26c6da','#7e57c2','#26a69a','#ffa726','#ec407a','#5c6bc0'];
+  subsToSave.forEach((s,i)=>{
+    SUBJECTS.push({name:s.name,code:'',teacher:'',pct:s.current_pct,cpw:s.classes_per_week,color:colors[i%colors.length],held:s.classes_held,attended:s.classes_attended});
   });
-  // Remove extra subjects if fewer this time
-  SUBJECTS.splice(subsToSave.length);
 
   showToast('Setup complete!');
   loadUserData();
@@ -1172,15 +1150,21 @@ function loadUserData() {
   // Load subjects
   const subs = DB.load('subjects_' + currentUser.id);
   if (subs && subs.length > 0) {
-    subs.forEach((s, i) => {
-      if (SUBJECTS[i]) {
-        SUBJECTS[i].name = s.name;
-        SUBJECTS[i].code = s.code;
-        SUBJECTS[i].teacher = s.teacher || '';
-        SUBJECTS[i].pct = s.current_pct;
-        SUBJECTS[i].cpw = s.classes_per_week;
-      }
+    // Clear and rebuild SUBJECTS array from saved data
+    SUBJECTS.splice(0, SUBJECTS.length);
+    subs.forEach(s => {
+      SUBJECTS.push({
+        name: s.name,
+        code: s.code || '',
+        teacher: s.teacher || '',
+        pct: s.current_pct || 0,
+        cpw: s.classes_per_week || 0,
+        color: '#2e3192'
+      });
     });
+    // Assign colors
+    const colors=['#ef5350','#66bb6a','#42a5f5','#26c6da','#7e57c2','#26a69a','#ffa726','#ec407a','#5c6bc0','#26c6da'];
+    SUBJECTS.forEach((s,i) => { s.color = colors[i % colors.length]; });
   }
 
   // Load timetable
@@ -1198,11 +1182,88 @@ function loadUserData() {
   if (hols) { holidayKeys.clear(); hols.forEach(h => holidayKeys.add(h)); }
 
   // Update home screen name
-  const nameEl = document.querySelector('.greeting-name');
+  const nameEl = document.getElementById('greeting-name');
   if (nameEl && currentUser.name) {
     const firstName = currentUser.name.split(' ')[0];
     nameEl.textContent = 'Hi ' + firstName + ',';
   }
+
+  // Update overall attendance on home screen
+  updateHomeStats();
+}
+
+function renderTodayClasses(){
+  const today=new Date();
+  const realDay=today.getDay(); // 0=Sun,1=Mon..6=Sat
+  // timetable: 0=Mon..5=Sat. Sun = no classes
+  const ttDayIdx=realDay===0?-1:realDay-1; // Mon=0,Tue=1..Sat=5,Sun=-1
+  const wrap=document.getElementById('home-today-classes');
+  if(!wrap) return;
+  const todayStr=fmtDateKey(today);
+
+  if(ttDayIdx===-1||holidayKeys.has(todayStr)){
+    wrap.innerHTML=`<div style="text-align:center;padding:20px;color:var(--muted);font-size:13px;background:var(--white);border-radius:14px;">${ttDayIdx===-1?'No classes on Sunday.':'Today is a holiday.'}</div>`;
+    return;
+  }
+
+  const classes=getClassesForDay(ttDayIdx);
+  if(!classes.length){
+    wrap.innerHTML=`<div style="text-align:center;padding:20px;color:var(--muted);font-size:13px;background:var(--white);border-radius:14px;">No classes scheduled for today.</div>`;
+    return;
+  }
+
+  const colors=['#ef5350','#66bb6a','#42a5f5','#26c6da','#7e57c2','#26a69a','#ffa726','#ec407a'];
+  const slotTimes=['9:15','10:15','11:15','—','1:15','2:15','3:15'];
+
+  wrap.innerHTML=classes.map((c,i)=>{
+    const sub=SUBJECTS.find(s=>s.name===c.name);
+    const pct=sub?sub.pct:0;
+    const pctBg=pct>=75?'#e8f5e9':pct>=65?'#fff3e0':'#fdecea';
+    const pctTc=pct>=75?'#2e7d32':pct>=65?'#e65100':'#c62828';
+    const dotColor=colors[i%colors.length];
+    let slotTime='9:15';
+    for(let si=0;si<7;si++){
+      if(si===3) continue;
+      if(ttData[ttDayIdx]&&ttData[ttDayIdx][si]&&ttData[ttDayIdx][si].name===c.name){slotTime=slotTimes[si];break;}
+    }
+    const rec=getAttRecord(todayStr,c.name);
+    const status=rec?rec.status:'';
+    const statusBadge=status==='present'?'<span style="font-size:9px;font-weight:700;color:#2e7d32;background:#e8f5e9;padding:2px 6px;border-radius:10px;">P</span>':status==='absent'?'<span style="font-size:9px;font-weight:700;color:var(--red);background:#fdecea;padding:2px 6px;border-radius:10px;">A</span>':'';
+    return `<div class="class-item" onclick="goTo('screen-subject-detail')">
+      <div class="class-time-col"><div class="class-time">${slotTime}</div><div class="class-dur">1hr</div></div>
+      <div class="class-dot" style="border-color:${dotColor};background:${dotColor}22;"></div>
+      <div class="class-info"><div class="class-name">${c.name} ${statusBadge}</div><div class="class-room">${c.type}</div></div>
+      <div class="class-pct-badge" style="background:${pctBg};color:${pctTc};">${pct.toFixed(1)}%</div>
+    </div>`;
+  }).join('');
+}
+
+function updateHomeStats(){
+  if(SUBJECTS.length===0) return;
+  const total=SUBJECTS.reduce((sum,s)=>sum+(s.pct||0),0);
+  const avg=SUBJECTS.length>0?total/SUBJECTS.length:0;
+
+  // Home overall %
+  const pctEl=document.getElementById('home-overall-pct');
+  if(pctEl){pctEl.textContent=avg.toFixed(2)+'%';pctEl.style.color=avg>=75?'#2e7d32':avg>=65?'#e65100':'#c62828';}
+
+  // Profile overall % — give it a proper id
+  const profPctEl=document.getElementById('profile-overall-pct');
+  if(profPctEl){profPctEl.textContent=avg.toFixed(2)+'%';profPctEl.style.color=pctColor(avg);}
+
+  if(currentUser){
+    const profName=document.querySelector('.profile-name');
+    if(profName) profName.textContent=currentUser.name;
+    const profRoll=document.querySelector('.profile-roll');
+    if(profRoll) profRoll.textContent=currentUser.roll_number;
+    const menuName=document.querySelector('.menu-name');
+    if(menuName) menuName.textContent=currentUser.name;
+    const menuId=document.querySelector('.menu-id');
+    if(menuId) menuId.textContent='ID: '+currentUser.roll_number;
+    const initials=currentUser.name.split(' ').map(n=>n[0]).join('').substring(0,2).toUpperCase();
+    document.querySelectorAll('.menu-avatar,.profile-avatar').forEach(el=>el.textContent=initials);
+  }
+  renderTodayClasses();
 }
 
 function saveHolidayToDB(dateStr) {
@@ -1306,17 +1367,15 @@ function openTTSlot(di,si){
   const c=ttData[di]?ttData[di][si]:null;
   document.getElementById('tt-slot-title').textContent=`${DAYS_FULL[di]} — ${SLOT_LABELS[si]}`;
   document.getElementById('tt-slot-name').value=c?c.name:'';
-  document.getElementById('tt-slot-code').value=c?c.code:'';
   document.getElementById('tt-slot-type').value=c?c.type:'Theory';
   openModal('modal-tt-slot');
 }
 function saveTTSlot(){
   const{di,si}=currentTTEdit;
   const name=document.getElementById('tt-slot-name').value.toUpperCase().trim();
-  const code=document.getElementById('tt-slot-code').value.toUpperCase().trim();
   const type=document.getElementById('tt-slot-type').value;
   if(!ttData[di])ttData[di]=Array(7).fill(null);
-  ttData[di][si]=name?{name,code,type}:null;
+  ttData[di][si]=name?{name,code:'',type}:null;
   closeModal('modal-tt-slot');
   buildTT('main-tt',true);
   buildTT('reg-tt',true);
@@ -1365,9 +1424,8 @@ function getSubjectsFromTimetable(){
 }
 
 function buildSubPctList(){
-  const subs = getSubjectsFromTimetable();
-
-  if(subs.length === 0){
+  const subs=getSubjectsFromTimetable();
+  if(subs.length===0){
     document.getElementById('sub-pct-list').innerHTML=`
       <div style="background:var(--orange-bg);border-radius:12px;padding:14px;margin-bottom:14px;border-left:3px solid var(--orange);">
         <div style="font-size:13px;font-weight:700;color:#e65100;margin-bottom:4px;">No subjects found</div>
@@ -1375,119 +1433,249 @@ function buildSubPctList(){
       </div>`;
     return;
   }
-
-  // Store dynamic subjects for later saving
-  window._dynamicSubjects = subs;
-
-  document.getElementById('sub-pct-list').innerHTML = subs.map((s,i)=>`
+  window._dynamicSubjects=subs;
+  document.getElementById('sub-pct-list').innerHTML=subs.map((s,i)=>`
     <div class="sub-pct-card">
-      <div class="sub-pct-name">${s.name}</div>
-      <div style="display:flex;gap:8px;margin-bottom:10px;align-items:center;">
-        <div class="sub-pct-code">${s.code||'—'}</div>
-        <div style="font-size:10px;color:var(--muted);background:var(--bg);padding:2px 8px;border-radius:20px;">${s.cpw} class${s.cpw!==1?'es':''}/week</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+        <div class="sub-pct-name" style="flex:1;margin-bottom:0;">${s.name}</div>
+        <div style="font-size:16px;font-weight:800;min-width:60px;text-align:right;" id="pct-badge-${i}">— %</div>
       </div>
-      <div class="sub-pct-row">
-        <input type="number" class="sub-pct-in" id="pct-${i}" placeholder="e.g. 74.66" min="0" max="100" step="0.01" oninput="calcOverallAvg()">
-        <div class="sub-pct-badge" id="pct-badge-${i}">—</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <div>
+          <div style="font-size:10px;color:var(--muted);font-weight:700;margin-bottom:5px;">CLASSES HELD</div>
+          <input type="number" class="sub-pct-in" id="held-${i}" placeholder="e.g. 31" min="0" oninput="calcSubPct(${i})">
+        </div>
+        <div>
+          <div style="font-size:10px;color:var(--muted);font-weight:700;margin-bottom:5px;">YOU ATTENDED</div>
+          <input type="number" class="sub-pct-in" id="att-${i}" placeholder="e.g. 22" min="0" oninput="calcSubPct(${i})">
+        </div>
       </div>
     </div>`).join('');
 }
+
+function calcSubPct(i){
+  const held=parseInt(document.getElementById('held-'+i)?.value)||0;
+  const att=parseInt(document.getElementById('att-'+i)?.value)||0;
+  const badge=document.getElementById('pct-badge-'+i);
+  if(!badge) return;
+  if(held>0&&att>=0&&att<=held){
+    const pct=(att/held)*100;
+    badge.textContent=pct.toFixed(2)+'%';
+    badge.style.color=pctColor(pct);
+    document.getElementById('att-'+i).classList.remove('err');
+  } else if(att>held&&held>0){
+    badge.textContent='!';
+    badge.style.color='var(--red)';
+    document.getElementById('att-'+i).classList.add('err');
+  } else {
+    badge.textContent='— %';
+    badge.style.color='var(--muted)';
+  }
+  calcOverallAvg();
+}
+
 function calcOverallAvg(){
-  const subs = window._dynamicSubjects || getSubjectsFromTimetable();
-  let sum=0,cnt=0;
+  const subs=window._dynamicSubjects||getSubjectsFromTimetable();
+  let sum=0,cnt=0,hasErr=false;
   subs.forEach((_,i)=>{
-    const v=parseFloat(document.getElementById('pct-'+i)?.value);
-    const inp=document.getElementById('pct-'+i);
-    const bdg=document.getElementById('pct-badge-'+i);
-    if(!inp||!bdg) return;
-    if(!isNaN(v)&&v>=0&&v<=100){
-      inp.classList.remove('err');
-      bdg.textContent=v.toFixed(2)+'%';
-      bdg.style.color=pctColor(v);
-      sum+=v;cnt++;
-    } else if(!isNaN(v)&&v>100){
-      inp.classList.add('err');
-      bdg.textContent='!';bdg.style.color='var(--red)';
-    } else {
-      bdg.textContent='—';bdg.style.color='var(--muted)';
-    }
+    const held=parseInt(document.getElementById('held-'+i)?.value)||0;
+    const att=parseInt(document.getElementById('att-'+i)?.value)||0;
+    if(held>0&&att>=0&&att<=held){sum+=(att/held)*100;cnt++;}
+    else if(att>held&&held>0) hasErr=true;
   });
   const avg=cnt>0?sum/cnt:0;
   const el=document.getElementById('overall-avg-val');
-  el.textContent=cnt>0?avg.toFixed(2)+'%':'— %';
-  el.style.color=pctColor(avg);
-  document.getElementById('overall-err').classList.toggle('hidden',avg<=100);
+  if(el){
+    el.textContent=cnt>0?avg.toFixed(2)+'%':'— %';
+    el.style.color=pctColor(avg);
+  }
+  document.getElementById('overall-err')?.classList.toggle('hidden',!hasErr);
+}
+
+// ════ ATTENDANCE CORE ENGINE ════
+
+// Get classes for a given weekday from timetable
+function getClassesForDay(dayIdx){
+  const SLOT_TIMES=['9:15–10:15 AM','10:15–11:15 AM','11:15–12:15 PM','LUNCH','1:15–2:15 PM','2:15–3:15 PM','3:15–4:15 PM'];
+  const classes=[];
+  const counted=new Set();
+  for(let si=0;si<7;si++){
+    if(si===3) continue;
+    const cell=ttData[dayIdx]?ttData[dayIdx][si]:null;
+    if(!cell) continue;
+    const prev=si>0&&si-1!==3?ttData[dayIdx][si-1]:null;
+    const isDouble=prev&&prev.name===cell.name;
+    const key=`${isDouble?si-1:si}`;
+    if(!counted.has(key)){
+      counted.add(key);
+      classes.push({name:cell.name,type:cell.type,time:SLOT_TIMES[si]});
+    }
+  }
+  return classes;
+}
+
+function getAttRecord(dateStr,subjectName){
+  if(!currentUser) return null;
+  const records=DB.load('att_records_'+currentUser.id)||[];
+  return records.find(r=>r.date===dateStr&&r.subject===subjectName)||null;
+}
+
+function setAttRecord(dateStr,subjectName,status){
+  if(!currentUser) return;
+  const records=DB.load('att_records_'+currentUser.id)||[];
+  const idx=records.findIndex(r=>r.date===dateStr&&r.subject===subjectName);
+  if(idx>-1) records[idx].status=status;
+  else records.push({date:dateStr,subject:subjectName,status:status});
+  DB.save('att_records_'+currentUser.id,records);
+}
+
+function recalcAllPercentages(){
+  if(!currentUser) return;
+  const records=DB.load('att_records_'+currentUser.id)||[];
+  const subs=DB.load('subjects_'+currentUser.id)||[];
+  subs.forEach(sub=>{
+    const subRecords=records.filter(r=>r.subject===sub.name&&(r.status==='present'||r.status==='absent'));
+    const newTotal=subRecords.length;
+    const newPresent=subRecords.filter(r=>r.status==='present').length;
+    const totalHeld=(sub.classes_held||0)+newTotal;
+    const totalAtt=(sub.classes_attended||0)+newPresent;
+    sub.current_pct=totalHeld>0?parseFloat(((totalAtt/totalHeld)*100).toFixed(2)):sub.initial_pct||0;
+  });
+  DB.save('subjects_'+currentUser.id,subs);
+  const colors=['#ef5350','#66bb6a','#42a5f5','#26c6da','#7e57c2','#26a69a','#ffa726','#ec407a','#5c6bc0'];
+  SUBJECTS.splice(0,SUBJECTS.length);
+  subs.forEach((s,i)=>{
+    SUBJECTS.push({name:s.name,code:'',teacher:s.teacher||'',pct:s.current_pct,cpw:s.classes_per_week,color:colors[i%colors.length],held:s.classes_held,attended:s.classes_attended});
+  });
+  updateHomeStats();
 }
 
 // ════ MARK ATTENDANCE ════
 function renderMarkScreen(){
-  const today=new Date();
+  const today=new Date();today.setHours(0,0,0,0);
+  const todayStr=fmtDateKey(today);
   const dNames=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-  const mth=MONTHS_SHORT;
   let html='';
-  for(let i=-3;i<=3;i++){
+  for(let i=-6;i<=0;i++){
     const d=new Date(today);d.setDate(today.getDate()+i);
-    const k=dateKey(d);
+    const k=fmtDateKey(d);
     const isHol=holidayKeys.has(k);
-    html+=`<div class="date-chip ${i===0?'today-chip active':''}" onclick="selectMarkDay(this,${d.getDay()},${i},'${k}')">
+    const isToday=i===0;
+    html+=`<div class="date-chip ${isToday?'today-chip active':''}" onclick="selectMarkDay(this,${d.getDay()},'${k}',${isToday})">
       <div class="dc-day">${dNames[d.getDay()]}</div>
       <div class="dc-num"${isHol?' style="color:var(--red)"':''}>${d.getDate()}</div>
-      <div class="dc-mon">${mth[d.getMonth()]}</div>
+      <div class="dc-mon">${MONTHS_SHORT[d.getMonth()]}</div>
     </div>`;
   }
   document.getElementById('date-strip').innerHTML=html;
-  const k=dateKey(today);
-  renderMarkClasses(today.getDay(),k);
+  renderMarkClasses(today.getDay(),todayStr,true);
   document.getElementById('mark-date-lbl').textContent=`${WEEK_NAMES[today.getDay()]}, ${today.getDate()} ${MONTHS_FULL[today.getMonth()]} ${today.getFullYear()}`;
 }
-function selectMarkDay(el,dayIdx,offset,key){
+
+let _currentMarkDate='';
+
+function selectMarkDay(el,jsDay,key,isToday){
   document.querySelectorAll('.date-chip').forEach(c=>c.classList.remove('active'));
   el.classList.add('active');
-  const d=new Date();d.setDate(d.getDate()+offset);
+  const parts=key.split('-');
+  const d=new Date(parseInt(parts[0]),parseInt(parts[1])-1,parseInt(parts[2]));
   document.getElementById('mark-date-lbl').textContent=`${WEEK_NAMES[d.getDay()]}, ${d.getDate()} ${MONTHS_FULL[d.getMonth()]} ${d.getFullYear()}`;
-  renderMarkClasses(dayIdx,key);
+  renderMarkClasses(jsDay,key,isToday);
 }
-function renderMarkClasses(dayIdx,key){
+
+function renderMarkClasses(jsDay,dateStr,canMark){
+  _currentMarkDate=dateStr;
   const wrap=document.getElementById('mark-classes');
-  if(holidayKeys.has(key)){
-    wrap.innerHTML=`<div class="holiday-notice"><div class="holiday-notice-title">Holiday</div><div class="holiday-notice-sub">This day is marked as a holiday. No attendance recorded.</div></div>`;
+  if(holidayKeys.has(dateStr)){
+    wrap.innerHTML=`<div class="holiday-notice"><div class="holiday-notice-title">Holiday</div><div class="holiday-notice-sub">This day is marked as a holiday.</div></div>`;
     return;
   }
-  const cls=scheduleData[dayIdx]||[];
-  if(!cls.length){
+  // jsDay: 0=Sun,1=Mon..6=Sat → ttDayIdx: 0=Mon..5=Sat
+  const ttDayIdx=jsDay===0?-1:jsDay-1;
+  if(ttDayIdx===-1){
+    wrap.innerHTML=`<div style="text-align:center;padding:40px;color:var(--muted);font-size:13px;">No classes on Sunday.</div>`;
+    return;
+  }
+  const classes=getClassesForDay(ttDayIdx);
+  if(!classes.length){
     wrap.innerHTML=`<div style="text-align:center;padding:40px;color:var(--muted);font-size:13px;">No classes on this day.</div>`;
     return;
   }
-  wrap.innerHTML=cls.map((c,i)=>`
-    <div class="mark-card">
-      <div class="mark-card-name">${c.name}</div>
-      <div class="mark-card-time">${c.time}</div>
-      <div class="mark-btns">
-        <button class="mark-btn ${c.status==='present'?'present':''}" onclick="setMarkStatus(this,'present')">Present</button>
-        <button class="mark-btn ${c.status==='absent'?'absent':''}" onclick="setMarkStatus(this,'absent')">Absent</button>
-      </div>
-    </div>`).join('');
+  wrap.innerHTML=classes.map((c)=>{
+    const rec=getAttRecord(dateStr,c.name);
+    const status=rec?rec.status:'';
+    if(canMark){
+      return `<div class="mark-card">
+        <div class="mark-card-name">${c.name}</div>
+        <div class="mark-card-time">${c.time}</div>
+        <div class="mark-btns">
+          <button class="mark-btn ${status==='present'?'present':''}" onclick="setMarkStatus(this,'present','${c.name}')">Present</button>
+          <button class="mark-btn ${status==='absent'?'absent':''}" onclick="setMarkStatus(this,'absent','${c.name}')">Absent</button>
+        </div>
+      </div>`;
+    } else {
+      return `<div class="mark-card">
+        <div class="mark-card-name">${c.name}</div>
+        <div class="mark-card-time">${c.time}</div>
+        <div style="padding:10px;border-radius:10px;text-align:center;font-size:13px;font-weight:700;margin-top:8px;background:${status==='present'?'var(--green-bg)':status==='absent'?'var(--red-bg)':'var(--bg)'};color:${status==='present'?'#2e7d32':status==='absent'?'var(--red)':'var(--muted)'};">
+          ${status==='present'?'Present':status==='absent'?'Absent':'Not Marked'}
+        </div>
+      </div>`;
+    }
+  }).join('');
 }
-function setMarkStatus(btn,type){
+
+function setMarkStatus(btn,type,subjectName){
   const [b0,b1]=btn.parentElement.children;
   b0.className='mark-btn'+(type==='present'?' present':'');
   b1.className='mark-btn'+(type==='absent'?' absent':'');
+  setAttRecord(_currentMarkDate,subjectName,type);
+}
+
+function saveAttendanceAndUpdate(){
+  recalcAllPercentages();
+  showToast('Attendance saved!');
+  goBack();
 }
 
 // ════ SCHEDULE ════
+// schWeekOffset: 0 = current week, -1 = last week, +1 = next week
+let schWeekOffset=0;
+
+// Get Monday of current display week
+function getWeekMonday(offset){
+  const today=new Date();
+  const day=today.getDay(); // 0=Sun
+  // Find Monday of this week
+  const mondayDiff=day===0?-6:1-day;
+  const monday=new Date(today);
+  monday.setDate(today.getDate()+mondayDiff+(offset*7));
+  monday.setHours(0,0,0,0);
+  return monday;
+}
+
+function changeSchWeek(dir){
+  schWeekOffset+=dir;
+  renderSchedule();
+}
+
 function renderSchedule(){
   const today=new Date();
-  const mth=`${MONTHS_SHORT[today.getMonth()]} ${today.getFullYear()}`;
+  today.setHours(0,0,0,0);
+  const monday=getWeekMonday(schWeekOffset);
+
+  // Update month label
+  const mth=`${MONTHS_SHORT[monday.getMonth()]} ${monday.getFullYear()}`;
   document.getElementById('sch-month-lbl').textContent=mth;
 
-  // Week strip: Sun..Sat of current week
-  const dNames=['Su','Mo','Tu','We','Th','Fr','Sa'];
+  // Build week strip Mon-Sun (7 days from Monday)
+  const dNames=['Mo','Tu','We','Th','Fr','Sa','Su'];
   let html='';
   for(let i=0;i<7;i++){
-    const d=new Date(today);d.setDate(today.getDate()-today.getDay()+i);
-    const k=dateKey(d);
+    const d=new Date(monday);d.setDate(monday.getDate()+i);
+    const k=fmtDateKey(d);
     const isHol=holidayKeys.has(k);
-    const isToday=i===today.getDay();
+    const isToday=d.getTime()===today.getTime();
     html+=`<div class="day-pill ${isToday?'active':''} ${isHol?'hol-day':''}" onclick="selectSchDay(${i},this,'${k}')">
       <span class="dp-name">${dNames[i]}</span>
       <span class="dp-num">${d.getDate()}</span>
@@ -1495,67 +1683,207 @@ function renderSchedule(){
   }
   document.getElementById('week-strip').innerHTML=html;
 
-  selectedSchDayIdx=today.getDay();
-  const todayKey=dateKey(today);
-  selectedSchDateKey=todayKey;
+  // Select today if in current week, else Monday
+  const todayKey=fmtDateKey(today);
+  let defaultIdx=0;
+  for(let i=0;i<7;i++){
+    const d=new Date(monday);d.setDate(monday.getDate()+i);
+    if(fmtDateKey(d)===todayKey){defaultIdx=i;break;}
+  }
+  const defaultDate=new Date(monday);defaultDate.setDate(monday.getDate()+defaultIdx);
+  const defaultKey=fmtDateKey(defaultDate);
+  selectedSchDayIdx=defaultIdx;
+  selectedSchDateKey=defaultKey;
   updateHolToggleBtn();
-  renderSchDay(today.getDay(),todayKey);
+  renderSchDay(defaultIdx,defaultKey,defaultDate);
 }
-function selectSchDay(idx,el,key){
+
+// Format date as YYYY-MM-DD string (consistent key format)
+function fmtDateKey(d){
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function selectSchDay(stripIdx,el,key){
   document.querySelectorAll('.day-pill').forEach(p=>p.classList.remove('active'));
   el.classList.add('active');
-  selectedSchDayIdx=idx;
+  selectedSchDayIdx=stripIdx;
   selectedSchDateKey=key;
   updateHolToggleBtn();
-  renderSchDay(idx,key);
+  const monday=getWeekMonday(schWeekOffset);
+  const d=new Date(monday);d.setDate(monday.getDate()+stripIdx);
+  renderSchDay(stripIdx,key,d);
 }
+
 function updateHolToggleBtn(){
   const isHol=holidayKeys.has(selectedSchDateKey);
   const btn=document.getElementById('hol-toggle-btn');
   btn.textContent=isHol?'Remove Holiday':'Mark Holiday';
   btn.style.background=isHol?'rgba(229,57,53,0.5)':'rgba(255,255,255,0.15)';
 }
+
 function toggleSelectedDayHoliday(){
   if(!selectedSchDateKey)return;
   if(holidayKeys.has(selectedSchDateKey)){
     holidayKeys.delete(selectedSchDateKey);
+    const hols=(DB.load('holidays_'+currentUser?.id)||[]).filter(h=>h!==selectedSchDateKey);
+    if(currentUser) DB.save('holidays_'+currentUser.id,hols);
     showToast('Holiday removed');
   } else {
     holidayKeys.add(selectedSchDateKey);
+    const hols=DB.load('holidays_'+currentUser?.id)||[];
+    hols.push(selectedSchDateKey);
+    if(currentUser) DB.save('holidays_'+currentUser.id,hols);
     showToast('Day marked as holiday');
   }
   renderSchedule();
 }
-function renderSchDay(dayIdx,key){
+
+function renderSchDay(stripIdx,dateStr,dateObj){
   const body=document.getElementById('sch-body');
   const typeColors={Theory:'#42a5f5',Lab:'#ffa726',Tutorial:'#7e57c2'};
-  if(holidayKeys.has(key)){
-    body.innerHTML=`<div class="holiday-banner"><div class="holiday-banner-title">Holiday</div><div class="holiday-banner-sub">This day is marked as a holiday. No classes are scheduled.</div></div>`;
+  const today=new Date();today.setHours(0,0,0,0);
+  const todayStr=fmtDateKey(today);
+  const isPast=dateStr<todayStr;
+  const isToday=dateStr===todayStr;
+  const isFuture=dateStr>todayStr;
+
+  if(holidayKeys.has(dateStr)){
+    body.innerHTML=`<div class="holiday-banner"><div class="holiday-banner-title">Holiday</div><div class="holiday-banner-sub">This day is marked as a holiday.</div></div>`;
     return;
   }
-  const cls=scheduleData[dayIdx]||[];
-  if(!cls.length){
-    body.innerHTML=`<div class="no-class"><div class="no-class-title">No classes scheduled</div><div class="no-class-sub">Select another day to view its schedule.</div></div>`;
+
+  // FIX: stripIdx 0=Mon..5=Sat,6=Sun. timetable 0=Mon..5=Sat. Sun=no classes
+  const ttDayIdx=stripIdx; // 0=Mon..5=Sat
+  if(stripIdx===6){
+    body.innerHTML=`<div class="no-class"><div class="no-class-title">Sunday</div><div class="no-class-sub">No classes scheduled.</div></div>`;
     return;
   }
-  body.innerHTML=cls.map((c,i)=>`
-    <div class="sch-card">
-      <div class="sch-info" onclick="goTo('screen-subject-detail')">
-        <div class="sch-name">${c.name}</div>
-        <div class="sch-time">${c.time}</div>
-      </div>
-      <button class="tap-btn ${c.status}" onclick="cycleStatus(this,${i},${dayIdx})">${c.status==='present'?'P':c.status==='absent'?'A':'?'}</button>
-      <div class="sch-type-bar" style="background:${typeColors[c.type]||'#42a5f5'}">${c.type}</div>
-    </div>`).join('');
+
+  const classes=getClassesForDay(ttDayIdx);
+  if(!classes.length){
+    body.innerHTML=`<div class="no-class"><div class="no-class-title">No classes scheduled</div><div class="no-class-sub">No subjects in timetable for this day.</div></div>`;
+    return;
+  }
+
+  // Date label
+  const dayNames=['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+  let dateBadge='';
+  if(isToday) dateBadge=`<div style="background:var(--green-bg);border-radius:10px;padding:8px 12px;margin-bottom:10px;font-size:12px;font-weight:700;color:#2e7d32;">Today — Real Attendance</div>`;
+  else if(isFuture) dateBadge=`<div style="background:#e3f2fd;border-radius:10px;padding:8px 12px;margin-bottom:10px;font-size:12px;font-weight:700;color:#1565c0;">Future — Estimated</div>`;
+  else dateBadge=`<div style="background:var(--bg);border-radius:10px;padding:8px 12px;margin-bottom:10px;font-size:12px;font-weight:700;color:var(--muted);">Past — Locked</div>`;
+
+  body.innerHTML=dateBadge+classes.map((c,i)=>{
+    const rec=getAttRecord(dateStr,c.name);
+    const status=rec?rec.status:'unmarked';
+
+    if(isPast){
+      // Past — read only
+      return `<div class="sch-card">
+        <div class="sch-info">
+          <div class="sch-name">${c.name}</div>
+          <div class="sch-time">${c.time}</div>
+        </div>
+        <div style="font-size:11px;font-weight:700;padding:6px 10px;border-radius:8px;background:${status==='present'?'var(--green-bg)':status==='absent'?'var(--red-bg)':'var(--bg)'};color:${status==='present'?'#2e7d32':status==='absent'?'var(--red)':'var(--muted)'};">${status==='present'?'P':status==='absent'?'A':'—'}</div>
+        <div class="sch-type-bar" style="background:${typeColors[c.type]||'#42a5f5'}">${c.type}</div>
+      </div>`;
+    } else if(isToday){
+      // Today — real marking
+      return `<div class="sch-card">
+        <div class="sch-info">
+          <div class="sch-name">${c.name}</div>
+          <div class="sch-time">${c.time}</div>
+        </div>
+        <button class="tap-btn ${status==='present'?'present':status==='absent'?'absent':'unmarked'}" onclick="cycleSchStatus(this,'${c.name}','${dateStr}',false)">${status==='present'?'P':status==='absent'?'A':'?'}</button>
+        <div class="sch-type-bar" style="background:${typeColors[c.type]||'#42a5f5'}">${c.type}</div>
+      </div>`;
+    } else {
+      // Future — estimated marking, blue style
+      const estStatus=status==='estimated-present'?'estimated-present':status==='estimated-absent'?'estimated-absent':'';
+      return `<div class="sch-card">
+        <div class="sch-info">
+          <div class="sch-name">${c.name}</div>
+          <div class="sch-time">${c.time}</div>
+        </div>
+        <button style="width:34px;height:34px;border-radius:9px;border:none;cursor:pointer;font-size:11px;font-weight:700;flex-shrink:0;background:${estStatus==='estimated-present'?'#e3f2fd':estStatus==='estimated-absent'?'var(--red-bg)':'var(--border)'};color:${estStatus==='estimated-present'?'#1565c0':estStatus==='estimated-absent'?'var(--red)':'var(--muted)'};" onclick="cycleSchStatus(this,'${c.name}','${dateStr}',true)">${estStatus==='estimated-present'?'✓':estStatus==='estimated-absent'?'✗':'?'}</button>
+        <div class="sch-type-bar" style="background:${typeColors[c.type]||'#42a5f5'}">${c.type}</div>
+      </div>`;
+    }
+  }).join('');
+
+  // Show estimated % impact if future
+  if(isFuture){
+    renderEstimateImpact(body);
+  }
 }
-function cycleStatus(btn,ci,di){
-  const seq=['unmarked','present','absent'];
-  const lbl=['?','P','A'];
-  const cur=btn.classList.contains('present')?1:btn.classList.contains('absent')?2:0;
-  const nxt=(cur+1)%3;
-  btn.className='tap-btn '+seq[nxt];
-  btn.textContent=lbl[nxt];
-  if(scheduleData[di]&&scheduleData[di][ci])scheduleData[di][ci].status=seq[nxt];
+
+function cycleSchStatus(btn,subjectName,dateStr,isEstimate){
+  const today=new Date();today.setHours(0,0,0,0);
+  const todayStr=fmtDateKey(today);
+  const isFuture=dateStr>todayStr;
+
+  if(isFuture){
+    const cur=btn.textContent;
+    let nxtStatus,nxtTxt,nxtBg,nxtColor;
+    if(cur==='?'){nxtStatus='estimated-present';nxtTxt='✓';nxtBg='#e3f2fd';nxtColor='#1565c0';}
+    else if(cur==='✓'){nxtStatus='estimated-absent';nxtTxt='✗';nxtBg='var(--red-bg)';nxtColor='var(--red)';}
+    else{nxtStatus='unmarked';nxtTxt='?';nxtBg='var(--border)';nxtColor='var(--muted)';}
+    btn.textContent=nxtTxt;
+    btn.style.background=nxtBg;
+    btn.style.color=nxtColor;
+    setAttRecord(dateStr,subjectName,nxtStatus);
+    // Show impact
+    const body=document.getElementById('sch-body');
+    renderEstimateImpact(body);
+  } else {
+    // Today — real marking
+    const seq=['unmarked','present','absent'];
+    const lbl=['?','P','A'];
+    const cur=btn.classList.contains('present')?1:btn.classList.contains('absent')?2:0;
+    const nxt=(cur+1)%3;
+    btn.className='tap-btn '+seq[nxt];
+    btn.textContent=lbl[nxt];
+    setAttRecord(dateStr,subjectName,seq[nxt]);
+    recalcAllPercentages();
+  }
+}
+
+function renderEstimateImpact(container){
+  // Calculate current % and estimated % if all marked classes are attended
+  if(SUBJECTS.length===0) return;
+  const records=DB.load('att_records_'+currentUser?.id)||[];
+  const subs=DB.load('subjects_'+currentUser?.id)||[];
+
+  let currentTotal=0,currentAtt=0,estAdd=0,estTotal=0;
+  subs.forEach(sub=>{
+    const realRecords=records.filter(r=>r.subject===sub.name&&(r.status==='present'||r.status==='absent'));
+    const estRecords=records.filter(r=>r.subject===sub.name&&(r.status==='estimated-present'||r.status==='estimated-absent'));
+    currentTotal+=(sub.classes_held||0)+realRecords.length;
+    currentAtt+=(sub.classes_attended||0)+realRecords.filter(r=>r.status==='present').length;
+    estAdd+=estRecords.length;
+    estTotal+=estRecords.filter(r=>r.status==='estimated-present').length;
+  });
+
+  const currentPct=currentTotal>0?(currentAtt/currentTotal*100):0;
+  const newTotal=currentTotal+estAdd;
+  const newAtt=currentAtt+estTotal;
+  const estPct=newTotal>0?(newAtt/newTotal*100):currentPct;
+
+  // Remove old impact box if exists
+  const old=container.querySelector('.est-impact-box');
+  if(old) old.remove();
+
+  if(estAdd>0){
+    const box=document.createElement('div');
+    box.className='est-impact-box';
+    box.style.cssText='background:#e3f2fd;border-radius:12px;padding:12px 14px;margin-bottom:10px;border-left:3px solid #1565c0;';
+    box.innerHTML=`<div style="font-size:11px;font-weight:700;color:#1565c0;margin-bottom:8px;">ESTIMATED IMPACT</div>
+      <div style="display:flex;justify-content:space-between;">
+        <div style="text-align:center;"><div style="font-size:18px;font-weight:800;color:${pctColor(currentPct)}">${currentPct.toFixed(2)}%</div><div style="font-size:10px;color:var(--muted);margin-top:2px;">Current</div></div>
+        <div style="font-size:20px;color:var(--muted);align-self:center;">→</div>
+        <div style="text-align:center;"><div style="font-size:18px;font-weight:800;color:${pctColor(estPct)}">${estPct.toFixed(2)}%</div><div style="font-size:10px;color:var(--muted);margin-top:2px;">After Estimate</div></div>
+      </div>`;
+    container.insertBefore(box,container.firstChild);
+  }
 }
 
 // Schedule calendar modal
@@ -1599,8 +1927,9 @@ function renderSubjects(){
   document.getElementById('subjects-list').innerHTML=SUBJECTS.map((s,i)=>{
     const c=pctColor(s.pct);
     const skip=s.pct>=75?`Can skip ${Math.max(0,Math.floor((s.pct/100*62-0.75*62)))} more`:'Attend all';
+    const initials=s.name.split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();
     return `<div class="sub-card" onclick="goTo('screen-subject-detail')">
-      <div class="sub-icon" style="background:${s.color}">${s.code}</div>
+      <div class="sub-icon" style="background:${s.color}">${initials}</div>
       <div class="sub-info"><div class="sub-name">${s.name}</div><div class="sub-teacher">${s.teacher||'Faculty'}</div></div>
       <div class="sub-right"><div class="sub-pct-val" style="color:${c}">${s.pct.toFixed(2)}%</div><div class="sub-skip-lbl">${skip}</div></div>
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#b0b8c8" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
@@ -1610,17 +1939,25 @@ function renderSubjects(){
 
 // ════ ATTENDANCE OVERVIEW ════
 function renderAttendance(){
-  document.getElementById('bar-chart').innerHTML=SUBJECTS.map((s,i)=>{
+  const total=SUBJECTS.reduce((sum,s)=>sum+(s.pct||0),0);
+  const avg=SUBJECTS.length>0?total/SUBJECTS.length:0;
+
+  document.getElementById('bar-chart').innerHTML=SUBJECTS.map((s)=>{
     const h=Math.max(4,(s.pct/100)*95);
     const c=s.pct>=75?'#42a5f5':s.pct>=65?'#ffa726':'#ef5350';
-    return `<div class="bar-col"><div class="bar" style="height:${h}px;background:${c};"></div><div class="bar-lbl">${s.code}</div></div>`;
+    const lbl=s.name.split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();
+    return `<div class="bar-col"><div class="bar" style="height:${h}px;background:${c};"></div><div class="bar-lbl">${lbl}</div></div>`;
   }).join('');
-  document.getElementById('att-sub-list').innerHTML=SUBJECTS.map((s,i)=>{
+
+  const avgEl=document.getElementById('att-total-avg');
+  if(avgEl){avgEl.textContent=avg.toFixed(2)+'%';avgEl.style.color=pctColor(avg);}
+
+  document.getElementById('att-sub-list').innerHTML=SUBJECTS.map((s)=>{
     const c=pctColor(s.pct);
     return `<div class="att-sub-row" onclick="goTo('screen-subject-detail')">
       <div class="att-dot" style="background:${s.color};"></div>
       <div class="att-sub-name">${s.name}</div>
-      <div class="att-sub-pct" style="color:${c};">${s.pct.toFixed(2)}%</div>
+      <div class="att-sub-pct" style="color:${c};">${(s.pct||0).toFixed(2)}%</div>
     </div>`;
   }).join('');
 }
